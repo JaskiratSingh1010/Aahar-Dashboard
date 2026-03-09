@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aahar 2026 — Live Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:         #F7F8FD;
+  --surface:    #EEF0FA;
+  --card:       #FFFFFF;
+  --border:     #E2E5F0;
+  --border-2:   #CDD1E8;
+
+  --ink:        #1C1A3A;
+  --ink-2:      #3E3C6B;
+  --ink-3:      #7B78A8;
+  --ink-4:      #ABA9CC;
+
+  --purple:     #7C5CFC;
+  --purple-lt:  #EDE8FF;
+  --teal:       #3BBFB4;
+  --teal-lt:    #E2F8F6;
+  --green:      #2ECC9A;
+  --green-lt:   #E2F9F2;
+  --orange:     #F5A623;
+  --orange-lt:  #FEF3E0;
+  --red:        #F25C6E;
+  --red-lt:     #FEE8EB;
+
+  --indigo:     #7C5CFC;
+  --indigo-bg:  #EDE8FF;
+  --cyan:       #3BBFB4;
+  --cyan-bg:    #E2F8F6;
+  --emerald:    #2ECC9A;
+  --emerald-bg: #E2F9F2;
+  --violet:     #A07CF8;
+  --violet-bg:  #F2EDFF;
+  --amber:      #F5A623;
+  --amber-bg:   #FEF3E0;
+  --rose:       #F25C6E;
+
+  --radius:     10px;
+  --radius-sm:  7px;
+  --shadow-sm:  0 1px 3px rgba(100,90,200,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:     0 4px 16px rgba(100,90,200,0.10), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-md:  0 8px 32px rgba(100,90,200,0.13), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+html { font-size: 13px; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(100,90,200,0.06);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.wordmark { display: flex; align-items: center; gap: 9px; }
+
+.wm-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #7C5CFC 0%, #A07CF8 100%);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 900; color: #fff;
+  box-shadow: 0 2px 8px rgba(124,92,252,0.35);
+  flex-shrink: 0;
+}
+
+.wm-text { display: flex; flex-direction: column; gap: 0; }
+
+.wm-title {
+  font-size: 16px; font-weight: 800;
+  color: var(--ink); letter-spacing: -0.4px; line-height: 1.2;
+}
+
+.wm-sub {
+  font-size: 10.5px; color: var(--ink-4);
+  font-weight: 400; line-height: 1.2;
+}
+
+.nav-sep {
+  width: 1px; height: 18px;
+  background: var(--border-2); margin: 0 14px;
+}
+
+.event-tag {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 500; color: var(--ink-3);
+}
+
+.event-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--purple);
+}
+
+.nav-right { display: flex; align-items: center; gap: 12px; }
+
+.ts {
+  font-size: 11px; color: var(--ink-4);
+  font-weight: 500; font-variant-numeric: tabular-nums;
+}
+
+.live-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--green-lt);
+  border: 1px solid #A8EDD8;
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 10.5px; font-weight: 700;
+  color: var(--green); letter-spacing: 0.3px;
+}
+
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); position: relative;
+}
+
+.export-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 13px;
+  background: var(--purple);
+  color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 700;
+  font-family: inherit;
+  cursor: pointer; letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(124,92,252,0.30);
+  transition: all 0.15s;
+}
+
+.export-btn:hover {
+  background: #6A4AE8;
+  box-shadow: 0 4px 14px rgba(124,92,252,0.40);
+  transform: translateY(-1px);
+}
+
+.export-btn:active { transform: translateY(0); }
+
+.live-dot::before {
+  content: ''; position: absolute; inset: -3px;
+  border-radius: 50%; background: var(--green);
+  opacity: 0.3; animation: ping 2s ease-out infinite;
+}
+
+@keyframes ping {
+  0%    { transform:scale(1); opacity:0.4; }
+  80%, 100% { transform:scale(2.2); opacity:0; }
+}
+
+/* ── PAGE ── */
+.page {
+  max-width: 1920px; margin: 0 auto;
+  padding: 18px 22px 48px;
+}
+
+/* ── KPI ROW ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px; margin-bottom: 18px;
+}
+
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 14px;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.kpi:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+
+.kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 10px 10px 0 0;
+}
+
+.kpi.k1::after { background: linear-gradient(90deg, #7C5CFC, #A07CF8); }
+.kpi.k2::after { background: linear-gradient(90deg, #3BBFB4, #5BD4CC); }
+.kpi.k3::after { background: linear-gradient(90deg, #2ECC9A, #50DDB0); }
+.kpi.k4::after { background: linear-gradient(90deg, #A07CF8, #C4A0FF); }
+.kpi.k5::after { background: linear-gradient(90deg, #F5A623, #F8C064); }
+
+.kpi.k1 { border-top: none; }
+.kpi.k2 { border-top: none; }
+.kpi.k3 { border-top: none; }
+.kpi.k4 { border-top: none; }
+.kpi.k5 { border-top: none; }
+
+.kpi-top {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 10px;
+}
+
+.kpi-tag {
+  font-size: 10px; font-weight: 600;
+  color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.7px;
+}
+
+.kpi-icon-wrap {
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+.kpi.k1 .kpi-icon-wrap { background: var(--purple-lt); }
+.kpi.k2 .kpi-icon-wrap { background: var(--teal-lt); }
+.kpi.k3 .kpi-icon-wrap { background: var(--green-lt); }
+.kpi.k4 .kpi-icon-wrap { background: var(--violet-bg); }
+.kpi.k5 .kpi-icon-wrap { background: var(--orange-lt); }
+
+.kpi-num {
+  font-size: 36px; font-weight: 800;
+  line-height: 1; letter-spacing: -1.5px;
+  color: var(--ink);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.kpi.hero .kpi-num { font-size: 40px; }
+
+.kpi-meta {
+  margin-top: 5px; font-size: 11px;
+  color: var(--ink-4); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.kpi-meta b { color: var(--ink-2); font-weight: 600; }
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+.g3  { grid-column: span 3; }
+.g4  { grid-column: span 4; }
+.g5  { grid-column: span 5; }
+.g6  { grid-column: span 6; }
+.g7  { grid-column: span 7; }
+.g8  { grid-column: span 8; }
+.g12 { grid-column: span 12; }
+
+/* ── CARD ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex; flex-direction: column;
+  gap: 12px; box-shadow: var(--shadow-sm);
+}
+
+.card-h {
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+
+.card-h-left { display: flex; align-items: center; gap: 7px; }
+
+.card-icon {
+  font-size: 13px;
+  width: 26px; height: 26px;
+  background: var(--purple-lt);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.card-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.2px;
+}
+
+.tag {
+  font-size: 10px; font-weight: 600;
+  color: var(--purple);
+  background: var(--purple-lt);
+  border: none;
+  border-radius: 5px; padding: 2px 8px;
+  letter-spacing: 0.2px;
+}
+
+.divider {
+  height: 1px; background: var(--border); margin: 0 -18px;
+}
+
+.chart-box {
+  flex: 1; position: relative; min-height: 240px;
+}
+
+/* ── TABLET TILES ── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px; text-align: center;
+  cursor: default; transition: all 0.15s;
+}
+
+.tile:hover {
+  background: var(--purple-lt);
+  border-color: #C4B5FD;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124,92,252,0.12);
+}
+
+.tile-n {
+  font-size: 22px; font-weight: 800;
+  letter-spacing: -1px; color: var(--purple); line-height: 1;
+}
+
+.tile-lbl {
+  font-size: 9.5px; color: var(--ink-3);
+  font-weight: 600; margin-top: 3px;
+  word-break: break-all; line-height: 1.3;
+}
+
+/* ── BAR METRIC ── */
+.bar-list {
+  display: flex; flex-direction: column;
+  gap: 11px; overflow-y: auto; max-height: 260px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 28px;
+  align-items: center; gap: 9px;
+}
+
+.bar-lbl {
+  font-size: 11.5px; font-weight: 600;
+  color: var(--ink-2); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.bar-track {
+  height: 7px; background: var(--surface);
+  border-radius: 99px; overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.bar-val {
+  font-size: 12px; font-weight: 800;
+  color: var(--ink); text-align: right; min-width: 24px;
+}
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+thead th {
+  text-align: left; padding: 8px 12px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--ink-3);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+thead th:first-child { border-radius: 6px 0 0 6px; }
+thead th:last-child  { border-radius: 0 6px 6px 0; }
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink-2); vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background 0.1s; }
+tbody tr:hover td { background: var(--purple-lt); }
+
+.pill-new {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  background: var(--green-lt); color: var(--green);
+  border: 1px solid #A8EDD8; border-radius: 20px;
+  padding: 1px 6px; animation: slide-in 0.4s ease;
+}
+
+@keyframes slide-in {
+  from { opacity:0; transform:translateY(-4px) scale(0.9); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.td-name   { font-weight: 700; color: var(--ink); }
+.td-org    { font-weight: 500; }
+.td-muted  { color: var(--ink-3); }
+.td-green  { color: var(--green); font-weight: 600; }
+.td-violet { color: var(--violet); font-weight: 500; }
+.td-indigo { color: var(--purple); font-weight: 700; }
+.td-small  { color: var(--ink-4); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-bar select {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filter-bar select:focus {
+  border-color: var(--purple);
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+  background: var(--purple-lt);
+}
+
+.filter-btn.active {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  box-shadow: 0 2px 8px rgba(124,92,252,0.25);
+}
+
+.filter-btn.active#btnFollowup {
+  background: var(--teal);
+  border-color: var(--teal);
+  box-shadow: 0 2px 8px rgba(59,191,180,0.25);
+}
+
+.filter-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-4);
+  margin-left: 4px;
+}
+
+.badge-important {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--purple);
+  background: var(--purple-lt);
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+.badge-followup {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--teal);
+  background: var(--teal-lt);
+  border-radius: 4px;
+  padding: 2px 5px;
+  margin-left: 3px;
+}
+
+/* ── EMPTY ── */
+.empty {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; min-height: 60px;
+  color: var(--ink-4); font-size: 11.5px; font-weight: 500;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+
+/* ── IMAGE MODAL ── */
+.img-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  background: var(--purple-lt); color: var(--purple);
+  border: 1px solid #C4B5FD; border-radius: 5px;
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.img-btn:hover { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); z-index: 1000;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: #fff; border-radius: 14px;
+  padding: 20px; max-width: 90vw; max-height: 90vh;
+  overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  position: relative; min-width: 320px;
+}
+
+.modal-title {
+  font-size: 13px; font-weight: 700; color: var(--ink);
+  margin-bottom: 14px; padding-right: 32px;
+}
+
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; font-size: 14px; color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
+
+.modal-images {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.modal-images img {
+  width: 100%; max-width: 600px; border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: block;
+}
+
+.modal-img-link {
+  font-size: 10px; color: var(--purple); margin-top: 4px;
+  display: block; text-decoration: none; word-break: break-all;
+}
+.modal-img-link:hover { text-decoration: underline; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
+
+/* ── CAROUSEL ── */
+.carousel-wrap { position: relative; }
+
+.carousel-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 10px;
+}
+
+.slide-label {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.3px;
+  color: var(--purple);
+}
+
+.carousel-controls { display: flex; align-items: center; gap: 8px; }
+
+.dots { display: flex; gap: 5px; }
+
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border-2); cursor: pointer; transition: all 0.2s;
+}
+
+.dot.active {
+  background: var(--purple); width: 18px; border-radius: 99px;
+}
+
+.carousel-btn {
+  width: 26px; height: 26px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--ink-3); font-size: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; box-shadow: var(--shadow-sm);
+}
+
+.carousel-btn:hover {
+  background: var(--purple); color: #fff; border-color: var(--purple);
+  box-shadow: 0 2px 8px rgba(124,92,252,0.3);
+}
+
+.pause-btn {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--purple);
+  border-color: var(--purple-lt);
+  background: var(--purple-lt);
+}
+
+.slides { overflow: hidden; border-radius: var(--radius); }
+
+.slide { display: none; animation: fadeSlide 0.3s ease; }
+.slide.active { display: block; }
+
+@keyframes fadeSlide {
+  from { opacity:0; transform:translateY(5px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@media (max-width: 1280px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .g4,.g5,.g7,.g8 { grid-column: span 6; }
+}
+
+@media (max-width: 768px) {
+  .page { padding: 12px; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .grid > * { grid-column: 1 / -1 !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <div style="display:flex;align-items:center">
+      <div class="wordmark">
+        <div class="wm-icon">A</div>
+        <div class="wm-text">
+          <span class="wm-title">Aahar 2026</span>
+          <span class="wm-sub">Lead Intelligence</span>
+        </div>
+      </div>
+      <div class="nav-sep"></div>
+      <div class="event-tag">
+        <div class="event-dot"></div>
+        International Food &amp; Hospitality Fair &nbsp;·&nbsp; Pragati Maidan, New Delhi
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="ts" id="lastUpdated">Connecting…</span>
+      <button class="export-btn" onclick="exportExcel()" title="Export all leads to Excel">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Excel
+      </button>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── KPI ROW (fixed) ── -->
+  <div class="kpi-row">
+    <div class="kpi k1 hero">
+      <div class="kpi-top"><span class="kpi-tag">Total Leads</span><div class="kpi-icon-wrap">🎯</div></div>
+      <div class="kpi-num" id="kTotal">—</div>
+      <div class="kpi-meta">Captured across all days &amp; tablets</div>
+    </div>
+    <div class="kpi k2">
+      <div class="kpi-top"><span class="kpi-tag">Top Representer</span><div class="kpi-icon-wrap">🏆</div></div>
+      <div class="kpi-num" id="kRepN">—</div>
+      <div class="kpi-meta"><b id="kRepLbl">—</b></div>
+    </div>
+    <div class="kpi k3">
+      <div class="kpi-top"><span class="kpi-tag">Top Meeting</span><div class="kpi-icon-wrap">🤝</div></div>
+      <div class="kpi-num" id="kPersonN">—</div>
+      <div class="kpi-meta"><b id="kPersonLbl">—</b></div>
+    </div>
+    <div class="kpi k4">
+      <div class="kpi-top"><span class="kpi-tag">Active Team</span><div class="kpi-icon-wrap">👥</div></div>
+      <div class="kpi-num" id="kTeamN">—</div>
+      <div class="kpi-meta"><b id="kTeamLbl">—</b></div>
+    </div>
+    <div class="kpi k5">
+      <div class="kpi-top"><span class="kpi-tag">Tablets Online</span><div class="kpi-icon-wrap">📱</div></div>
+      <div class="kpi-num" id="kTabs">—</div>
+      <div class="kpi-meta">Out of 14 deployed</div>
+    </div>
+  </div>
+
+  <!-- ── CAROUSEL ── -->
+  <div class="carousel-wrap">
+
+    <div class="carousel-header">
+      <span class="slide-label" id="slideLabel">Overview</span>
+      <div class="carousel-controls">
+        <div class="dots" id="dots"></div>
+        <button class="carousel-btn" onclick="prevSlide()">&#8592;</button>
+        <button class="carousel-btn pause-btn" id="pauseBtn" onclick="togglePause()">II</button>
+        <button class="carousel-btn" onclick="nextSlide()">&#8594;</button>
+      </div>
+    </div>
+
+    <div class="slides">
+
+      <!-- SLIDE 1 — Overview -->
+      <div class="slide active" id="slide-0">
+        <div class="grid">
+          <div class="card g5">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">📅</span><span class="card-title">Leads Per Day</span></div>
+              <span class="tag">Event Timeline</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chart-box" style="min-height:240px"><canvas id="cDay"></canvas></div>
+          </div>
+          <div class="card g4">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">📱</span><span class="card-title">Tablet-wise Leads</span></div>
+              <span class="tag">14 Deployed</span>
+            </div>
+            <div class="divider"></div>
+            <div class="tiles" id="tilesGrid"><div class="empty">Waiting…</div></div>
+          </div>
+          <div class="card g3">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">🔀</span><span class="card-title">Lead Type</span></div>
+              <span class="tag">Split</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chart-box" style="min-height:240px"><canvas id="cType"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 — Interests -->
+      <div class="slide" id="slide-1">
+        <div class="grid">
+          <div class="card g4">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">🗂️</span><span class="card-title">Interest by Category</span></div>
+              <span class="tag">Category-wise</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chart-box" style="min-height:260px"><canvas id="cCategory"></canvas></div>
+          </div>
+          <div class="card g8">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">📦</span><span class="card-title">Interest by Product &amp; Item</span></div>
+              <span class="tag">Item-wise</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chart-box" style="min-height:260px"><canvas id="cItem"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 — Meetings -->
+      <div class="slide" id="slide-2">
+        <div class="grid">
+          <div class="card g4">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">🙋</span><span class="card-title">Meeting With — Person</span></div>
+              <span class="tag">Individual</span>
+            </div>
+            <div class="divider"></div>
+            <div class="bar-list" id="barPerson"><div class="empty">Waiting…</div></div>
+          </div>
+          <div class="card g4">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">🏢</span><span class="card-title">Meeting With — Team</span></div>
+              <span class="tag">Department</span>
+            </div>
+            <div class="divider"></div>
+            <div class="bar-list" id="barTeam"><div class="empty">Waiting…</div></div>
+          </div>
+          <div class="card g4">
+            <div class="card-h">
+              <div class="card-h-left"><span class="card-icon">👤</span><span class="card-title">Leads per Rep</span></div>
+              <span class="tag">Performance</span>
+            </div>
+            <div class="divider"></div>
+            <div class="chart-box" style="min-height:240px"><canvas id="cRep"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /slides -->
+  </div><!-- /carousel-wrap -->
+
+  <!-- ── LEADS TABLE (fixed below carousel) ── -->
+  <div class="card" style="margin-top:14px">
+    <div class="card-h">
+      <div class="card-h-left"><span class="card-icon">⚡</span><span class="card-title">All Leads</span></div>
+      <div class="filter-bar">
+        <select id="filterRep" onchange="applyFilters()">
+          <option value="">All Users</option>
+        </select>
+        <button class="filter-btn" id="btnImportant" onclick="toggleFilter('important')" title="Important Contacts">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          Important
+        </button>
+        <button class="filter-btn" id="btnFollowup" onclick="toggleFilter('followup')" title="Follow-up Contacts">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          Follow-up
+        </button>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Organization</th><th>Card</th><th>Designation</th>
+            <th>Meeting With</th><th>Team</th><th>Captured By</th><th>Time</th><th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody">
+          <tr><td colspan="9" style="text-align:center;color:var(--ink-4);padding:24px">Waiting for data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Image Modal -->
+<div class="modal-overlay" id="imgModal" onclick="closeImgModal(event)">
+  <div class="modal-box">
+    <div class="modal-title" id="imgModalTitle">Business Card Images</div>
+    <button class="modal-close" onclick="document.getElementById('imgModal').classList.remove('open')">✕</button>
+    <div class="modal-images" id="imgModalContent"></div>
+  </div>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+Chart.defaults.color = '#ABA9CC';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11;
+
+const P = ['#7C5CFC','#3BBFB4','#2ECC9A','#F5A623','#A07CF8','#F25C6E','#0E9E96','#5B9CF8'];
+
+let charts = {};
+function uc(id, cfg) {
+  if (charts[id]) { charts[id].data = cfg.data; charts[id].update('active'); }
+  else { charts[id] = new Chart(document.getElementById(id), cfg); }
+}
+
+// ── Leads per Day ──
+function rDay(data) {
+  const labels = Object.keys(data), vals = Object.values(data);
+  uc('cDay', {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'Leads', data:vals, backgroundColor:'#7C5CFC', hoverBackgroundColor:'#6A4AE8', borderRadius:8, borderSkipped:false }]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:22 } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label: c => ` ${c.parsed.y} leads` } },
+        datalabels:{ anchor:'end', align:'end', color:'#3F3F46', font:{size:13,weight:'700'}, formatter:v=>v }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#71717A', font:{size:13,weight:'700'}} },
+        y:{ grid:{color:'rgba(124,92,252,0.06)'}, ticks:{color:'#A1A1AA',stepSize:1,padding:8}, beginAtZero:true, border:{display:false} }
+      }
+    }
+  });
+}
+
+// ── Category pie ──
+function rCategory(data) {
+  const e = Object.entries(data);
+  uc('cCategory', {
+    type: 'pie',
+    data: { labels: e.map(([k])=>k), datasets:[{ data:e.map(([,v])=>v), backgroundColor:P.slice(0,e.length), borderWidth:2, borderColor:'#fff', hoverOffset:8 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding: 28 },
+      plugins:{
+        legend:{ display:false },
+        datalabels:{
+          color: (ctx) => P[ctx.dataIndex % P.length],
+          anchor:'end', align:'end',
+          offset: 10,
+          font:{ size:12, weight:'700' },
+          formatter:(v,ctx)=>{
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            const pct = Math.round(v/total*100);
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            return pct >= 3 ? label + '\n' + pct+'%' : '';
+          },
+          display: (ctx) => {
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            return (ctx.dataset.data[ctx.dataIndex]/total) >= 0.03;
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Items horizontal bar ──
+function rItem(data) {
+  const e = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const minH = Math.max(240, e.length * 30);
+  const canvas = document.getElementById('cItem');
+  if (canvas) canvas.parentElement.style.minHeight = minH + 'px';
+  uc('cItem', {
+    type:'bar',
+    data:{
+      labels: e.map(([k])=>k.length>20?k.slice(0,18)+'…':k),
+      datasets:[{ label:'Count', data:e.map(([,v])=>v), backgroundColor:e.map((_,i)=>P[i%P.length]), borderRadius:5, borderSkipped:false }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ right:34 } },
+      plugins:{
+        legend:{display:false},
+        datalabels:{ anchor:'end', align:'right', color:'#09090B', font:{size:12,weight:'700'}, formatter:v=>v }
+      },
+      scales:{
+        x:{ grid:{color:'rgba(124,92,252,0.06)'}, ticks:{color:'#A1A1AA',stepSize:1}, beginAtZero:true, border:{display:false} },
+        y:{ grid:{display:false}, ticks:{color:'#3F3F46', font:{size:12}} }
+      }
+    }
+  });
+}
+
+// ── Leads per Rep ──
+function rRep(data) {
+  const e = Object.entries(data);
+  uc('cRep', {
+    type:'bar',
+    data:{
+      labels: e.map(([k])=>{ const s=k.split('@')[0]; return s.length>12?s.slice(0,11)+'…':s; }),
+      datasets:[{ label:'Leads', data:e.map(([,v])=>v), backgroundColor:e.map((_,i)=>P[i%P.length]), borderRadius:6, borderSkipped:false }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:20 } },
+      plugins:{
+        legend:{display:false},
+        datalabels:{ anchor:'end', align:'end', color:'#3F3F46', font:{size:12,weight:'700'}, formatter:v=>v }
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#3F3F46',font:{size:11}} },
+        y:{ grid:{color:'rgba(124,92,252,0.06)'}, ticks:{color:'#A1A1AA',stepSize:1}, beginAtZero:true, border:{display:false} }
+      }
+    }
+  });
+}
+
+// ── Lead Type doughnut ──
+function rType(data) {
+  const labels = Object.keys(data), vals = Object.values(data);
+  uc('cType', {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data:vals, backgroundColor:['#059669','#D97706'], borderWidth:3, borderColor:'#fff', hoverOffset:6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{
+        legend:{ display:true, position:'bottom', labels:{ boxWidth:10, padding:12, color:'#3F3F46', font:{size:11,weight:'600'} } },
+        datalabels:{
+          color:'#fff', font:{size:12,weight:'800'},
+          formatter:(v,ctx)=>{
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            const pct = total ? Math.round(v/total*100) : 0;
+            return pct > 4 ? pct+'%' : '';
+          },
+          display:(ctx)=>{
+            const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+            return total ? (ctx.dataset.data[ctx.dataIndex]/total) > 0.04 : false;
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── Tablets ──
+function rTiles(data) {
+  const el = document.getElementById('tilesGrid');
+  const e = Object.entries(data);
+  if (!e.length) { el.innerHTML='<div class="empty">No data yet</div>'; return; }
+  el.innerHTML = e.map(([email,count])=>{
+    const name = email.split('@')[0];
+    return `<div class="tile"><div class="tile-n">${count}</div><div class="tile-lbl">${name.length>10?name.slice(0,9)+'…':name}</div></div>`;
+  }).join('');
+}
+
+// ── Meeting bars ──
+function rBars(id, data, palette) {
+  const el = document.getElementById(id);
+  const e = Object.entries(data).sort((a,b)=>b[1]-a[1]);
+  if (!e.length) { el.innerHTML='<div class="empty">No data yet</div>'; return; }
+  const max = Math.max(...e.map(([,v])=>v));
+  el.innerHTML = e.map(([name,count],i)=>{
+    const pct = Math.round((count/max)*100);
+    const label = name.length>18?name.slice(0,16)+'…':name;
+    const color = palette[i%palette.length];
+    return `<div class="bar-row">
+      <div class="bar-lbl" title="${name}">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="bar-val" style="color:${color}">${count}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Recent Leads table ──
+let allLeads = [];
+let filterState = { rep: '', important: false, followup: false };
+
+function populateRepFilter(reps) {
+  const sel = document.getElementById('filterRep');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Users</option>' +
+    reps.map(r => `<option value="${r}" ${r===cur?'selected':''}>${r}</option>`).join('');
+}
+
+function toggleFilter(type) {
+  filterState[type] = !filterState[type];
+  document.getElementById(type==='important'?'btnImportant':'btnFollowup')
+    .classList.toggle('active', filterState[type]);
+  applyFilters();
+}
+
+function applyFilters() {
+  filterState.rep = document.getElementById('filterRep').value;
+  let filtered = allLeads.filter(l => {
+    if (filterState.rep && l.entered_by.split('@')[0] !== filterState.rep) return false;
+    if (filterState.important && !l.is_important) return false;
+    if (filterState.followup && !l.is_follow_up) return false;
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function renderTable(leads) {
+  const tb = document.getElementById('tblBody');
+  const fc = document.getElementById('filterCount');
+  fc.textContent = leads.length + ' of ' + allLeads.length + ' leads';
+  if (!leads.length) {
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-4);padding:24px">No leads match filters</td></tr>';
+    return;
+  }
+  tb.innerHTML = leads.map((l,i)=>{
+    const flags = [
+      l.is_important ? '<span class="badge-important"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>IMP</span>' : '',
+      l.is_follow_up ? '<span class="badge-followup"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>F/U</span>' : ''
+    ].join('');
+    const hasImg = l.image_urls && l.image_urls.length > 0;
+    const imgCell = hasImg
+      ? `<button class="img-btn" onclick='openImgModal(${JSON.stringify(l.image_urls)}, ${JSON.stringify(l.name)})'>📷 ${l.image_urls.length}</button>`
+      : '<span style="color:var(--ink-4);font-size:10px;">—</span>';
+    return `<tr>
+      <td><span class="td-name">${l.name}</span> ${i===0&&!filterState.rep&&!filterState.important&&!filterState.followup?'<span class="pill-new">● new</span>':''}</td>
+      <td class="td-org">${l.organization}</td>
+      <td>${imgCell}</td>
+      <td class="td-muted">${l.designation}</td>
+      <td class="td-green">${l.meeting_with||'—'}</td>
+      <td class="td-violet">${l.meeting_team||'—'}</td>
+      <td class="td-indigo">${l.entered_by.split('@')[0]}</td>
+      <td class="td-small">${l.time}</td>
+      <td>${flags}</td>
+    </tr>`;
+  }).join('');
+}
+
+function rTable(leads) {
+  if (!leads||!leads.length) {
+    document.getElementById('tblBody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-4);padding:24px">No leads yet</td></tr>';
+    return;
+  }
+  allLeads = leads;
+  applyFilters();
+}
+
+// ── Helpers ──
+function topEntry(obj) {
+  const e = Object.entries(obj||{});
+  return e.length ? e.reduce((a,b)=>b[1]>a[1]?b:a) : null;
+}
+
+function animateTo(el, target) {
+  const start = parseInt(el.textContent)||0;
+  if (start===target) return;
+  const diff = target-start, dur = Math.min(600,Math.abs(diff)*40), t0 = performance.now();
+  function step(t) {
+    const p = Math.min((t-t0)/dur,1), ease = 1-Math.pow(1-p,3);
+    el.textContent = Math.round(start+diff*ease);
+    if (p<1) requestAnimationFrame(step); else el.textContent=target;
+  }
+  requestAnimationFrame(step);
+}
+
+let prevTotal = 0;
+
+function update(d) {
+  if (!d||!d.total_leads) return;
+  const tel = document.getElementById('kTotal');
+  if (d.total_leads!==prevTotal) {
+    animateTo(tel, d.total_leads);
+    tel.style.transform='scale(1.06)';
+    setTimeout(()=>tel.style.transform='scale(1)',350);
+    prevTotal = d.total_leads;
+  }
+  const rep = topEntry(d.leads_per_rep);
+  if (rep) { animateTo(document.getElementById('kRepN'),rep[1]); document.getElementById('kRepLbl').textContent=rep[0].split('@')[0]; }
+  const person = topEntry(d.meeting_with_counts);
+  if (person) { animateTo(document.getElementById('kPersonN'),person[1]); document.getElementById('kPersonLbl').textContent=person[0]; }
+  const team = topEntry(d.meeting_team_counts);
+  if (team) { animateTo(document.getElementById('kTeamN'),team[1]); const t=team[0]; document.getElementById('kTeamLbl').textContent=t.length>20?t.slice(0,18)+'…':t; }
+  animateTo(document.getElementById('kTabs'), Object.keys(d.tablet_data||{}).length);
+  document.getElementById('lastUpdated').textContent = 'Updated '+(d.last_updated||'');
+
+  if (d.leads_per_day       && Object.keys(d.leads_per_day).length)       rDay(d.leads_per_day);
+  if (d.category_counts     && Object.keys(d.category_counts).length)     rCategory(d.category_counts);
+  if (d.item_counts         && Object.keys(d.item_counts).length)         rItem(d.item_counts);
+  if (d.leads_per_rep       && Object.keys(d.leads_per_rep).length)       rRep(d.leads_per_rep);
+  if (d.followup_counts     && Object.keys(d.followup_counts).length)     rType(d.followup_counts);
+  if (d.tablet_data)                                                        rTiles(d.tablet_data);
+  if (d.meeting_with_counts && Object.keys(d.meeting_with_counts).length) rBars('barPerson',d.meeting_with_counts,['#4F46E5','#1D4ED8','#0891B2','#059669','#7C3AED','#D97706']);
+  if (d.meeting_team_counts && Object.keys(d.meeting_team_counts).length) rBars('barTeam',d.meeting_team_counts,['#0891B2','#059669','#D97706','#7C3AED','#4F46E5','#E11D48']);
+  if (d.recent_leads)                                                       rTable(d.recent_leads);
+  if (d.all_reps)                                                           populateRepFilter(d.all_reps);
+}
+
+// ── CAROUSEL ──
+const SLIDES = [
+  { id:'slide-0', label:'📊 Overview' },
+  { id:'slide-1', label:'🗂️ Interests' },
+  { id:'slide-2', label:'🤝 Meetings & Performance' },
+];
+let current = 0;
+let autoTimer = null;
+
+function buildDots() {
+  const c = document.getElementById('dots');
+  c.innerHTML = SLIDES.map((_,i)=>`<div class="dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
+}
+
+function goSlide(n) {
+  document.getElementById(SLIDES[current].id).classList.remove('active');
+  document.querySelectorAll('.dot')[current].classList.remove('active');
+  current = (n+SLIDES.length)%SLIDES.length;
+  document.getElementById(SLIDES[current].id).classList.add('active');
+  document.querySelectorAll('.dot')[current].classList.add('active');
+  document.getElementById('slideLabel').textContent = SLIDES[current].label;
+  // Resize charts on newly visible slide
+  setTimeout(()=>{ Object.values(charts).forEach(c=>c.resize()); },50);
+  resetAuto();
+}
+
+function nextSlide() { goSlide(current+1); }
+function prevSlide() { goSlide(current-1); }
+
+let paused = false;
+
+function togglePause() {
+  paused = !paused;
+  const btn = document.getElementById('pauseBtn');
+  if (paused) {
+    clearInterval(autoTimer);
+    btn.textContent = '▶';
+    btn.title = 'Resume auto-advance';
+    btn.style.background = 'var(--purple)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--purple)';
+  } else {
+    btn.textContent = '⏸';
+    btn.title = 'Pause auto-advance';
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+    resetAuto();
+  }
+}
+
+function resetAuto() {
+  if (paused) return;
+  clearInterval(autoTimer);
+  autoTimer = setInterval(()=>goSlide(current+1), 10000);
+}
+
+buildDots();
+document.getElementById('slideLabel').textContent = SLIDES[0].label;
+resetAuto();
+
+// ── Export Excel ──
+let lastData = null;
+
+async function exportExcel() {
+  if (!lastData) { alert('No data loaded yet, please wait a moment.'); return; }
+
+  const btn = document.querySelector('.export-btn');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '⏳ Exporting…';
+  btn.disabled = true;
+
+  try {
+    // Fetch ALL leads from backend
+    const res = await fetch('/export');
+    const allLeads = await res.json();
+    const d = lastData;
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: ALL Leads (full backend data)
+    const headers = ['Name','Email','Phone','Organization','Designation','Company Strength',
+                     'Meeting With','Meeting Team','Area of Interest','Remarks',
+                     'Follow-up','Important','Captured By','Date','Image URLs'];
+    const leadsRows = [headers];
+    allLeads.forEach(l => {
+      leadsRows.push([
+        l.name, l.email, l.phone, l.organization, l.designation, l.company_strength,
+        l.meeting_with, l.meeting_team, l.area_of_interest, l.remarks,
+        l.is_follow_up, l.is_important, l.captured_by, l.date, l.image_urls||''
+      ]);
+    });
+    const ws1 = XLSX.utils.aoa_to_sheet(leadsRows);
+    // Column widths
+    ws1['!cols'] = [20,28,14,28,20,14,14,22,40,30,10,10,20,20].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws1, 'All Leads');
+
+    // Sheet 2: Leads per Day
+    const dayRows = [['Day','Leads']];
+    Object.entries(d.leads_per_day||{}).forEach(([k,v]) => dayRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dayRows), 'Leads Per Day');
+
+    // Sheet 3: Leads per Rep
+    const repRows = [['Rep Email','Leads']];
+    Object.entries(d.leads_per_rep||{}).forEach(([k,v]) => repRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(repRows), 'Leads Per Rep');
+
+    // Sheet 4: Interest Category
+    const catRows = [['Category','Count']];
+    Object.entries(d.category_counts||{}).forEach(([k,v]) => catRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(catRows), 'Interest Category');
+
+    // Sheet 5: Interest Items
+    const itemRows = [['Item','Count']];
+    Object.entries(d.item_counts||{}).forEach(([k,v]) => itemRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(itemRows), 'Interest Items');
+
+    // Sheet 6: Meeting With Person
+    const personRows = [['Person','Count']];
+    Object.entries(d.meeting_with_counts||{}).forEach(([k,v]) => personRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(personRows), 'Meeting Person');
+
+    // Sheet 7: Meeting With Team
+    const teamRows = [['Team','Count']];
+    Object.entries(d.meeting_team_counts||{}).forEach(([k,v]) => teamRows.push([k,v]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(teamRows), 'Meeting Team');
+
+    const date = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `Aahar2026_Leads_${date}.xlsx`);
+  } catch(e) {
+    alert('Export failed: ' + e.message);
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }
+}
+
+// ── Image Modal ──
+function openImgModal(urls, name) {
+  document.getElementById('imgModalTitle').textContent = name + ' — Business Card';
+  document.getElementById('imgModalContent').innerHTML = urls.map((url, i) => `
+    <div>
+      <img src="${url}" alt="Business card ${i+1}" loading="lazy"
+           onerror="this.style.display='none';this.nextSibling.textContent='Image failed to load'"/>
+      <a class="modal-img-link" href="${url}" target="_blank">🔗 Open full size ↗</a>
+    </div>`).join('');
+  document.getElementById('imgModal').classList.add('open');
+}
+
+function closeImgModal(e) {
+  if (e.target === document.getElementById('imgModal'))
+    document.getElementById('imgModal').classList.remove('open');
+}
+
+// ── Poll ──
+function poll() {
+  fetch('/data')
+    .then(r=>r.json())
+    .then(d=>{ lastData = d; update(d); })
+    .catch(()=>{ document.getElementById('lastUpdated').textContent='⚠️ Server unreachable…'; });
+}
+poll();
+setInterval(poll, 3000);
+</script>
+</body>
+</html>
