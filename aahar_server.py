@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate(r"C:\Users\JWPL\Desktop\Aahar-Live\aahar-database.json")
+    cred = credentials.Certificate(r"C:\Users\JWPL\Desktop\aahar-database.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
