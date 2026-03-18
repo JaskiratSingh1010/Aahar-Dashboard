@@ -2229,7 +2229,7 @@ function renderTable(leads) {
       l.is_stock ? '<span class="badge-important" style="background:var(--teal-lt);color:var(--teal);border-color:#A8EDD8">STK</span>' : ''
     ].join('');
     const imgCell = l.image_urls?.length
-      ? `<button class="img-btn" onclick='openImgModal(${JSON.stringify(l.image_urls)},${JSON.stringify(l.name)})'>📷 ${l.image_urls.length}</button>`
+      ? `<a href="${l.image_urls[0]}" target="_blank" class="img-btn">📷 ${l.image_urls.length}</a>`
       : '<span style="color:var(--ink-4);font-size:10px;">—</span>';
 
     const cellMap = {
@@ -2253,7 +2253,7 @@ function renderTable(leads) {
       other_interest:() => `<td class="td-muted" style="font-size:11px">${l.other_interest || '—'}</td>`,
       reg_id:        () => `<td class="td-small">${l.registration_id || '—'}</td>`,
       is_stock:      () => `<td>${l.is_stock ? '<span style="color:var(--teal);font-weight:700;font-size:11px">✓ Yes</span>' : '<span style="color:var(--ink-4);font-size:11px">No</span>'}</td>`,
-      simple_cam:    () => l.simple_cam_url ? `<td><a href="${l.simple_cam_url}" target="_blank"><img src="${l.simple_cam_url}" style="height:36px;border-radius:4px;border:1px solid var(--border);cursor:pointer" onerror="this.style.display='none'"/></a></td>` : `<td class="td-muted">—</td>`,
+      simple_cam:    () => l.simple_cam_url ? `<td><a href="${l.simple_cam_url}" target="_blank" class="img-btn">📷 View</a></td>` : `<td class="td-muted">—</td>`,
       interested_in: () => `<td class="td-muted" style="font-size:11px">${l.interested_in || '—'}</td>`,
       mtg_others:    () => `<td class="td-muted" style="font-size:11px">${l.meeting_with_others || '—'}</td>`,
       email_status:  () => `<td class="td-small">${l.email_delivery_status || '—'}</td>`,

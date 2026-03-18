@@ -59,6 +59,20 @@ def parse_list_field(value):
     except:
         return [str(value)]
 
+def safe_str(val):
+    """Safely convert any value to string, handling NaN, lists, etc."""
+    try:
+        if val is None:
+            return ''
+        if isinstance(val, (list, tuple)):
+            return ', '.join(str(v) for v in val)
+        s = str(val).strip()
+        if s in ('nan', 'None', 'NaN'):
+            return ''
+        return s
+    except:
+        return ''
+
 def process_data(docs):
     if not docs:
         return {}
@@ -66,14 +80,12 @@ def process_data(docs):
     df = pd.json_normalize([flatten_doc(d) for d in docs])
     total_leads = len(df)
 
-    # Leads per rep
     leads_per_rep = {}
     if 'entered_by_email' in df.columns:
         leads_per_rep = df['entered_by_email'].fillna('Unknown').value_counts().to_dict()
 
     tablet_data = leads_per_rep
 
-    # Area of interest
     interest_counts = {}
     ALLOWED_CATS = {'oil', 'beverage', 'food', 'others'}
     category_counts = {}
@@ -99,9 +111,8 @@ def process_data(docs):
     category_counts = dict(sorted(category_counts.items(), key=lambda x: x[1], reverse=True))
     item_counts = dict(sorted(item_counts.items(), key=lambda x: x[1], reverse=True))
 
-    # Leads per day — Day 1, Day 2, Day 3 ...
     leads_per_day = {}
-    day_label_map = {}   # ← FIX: always defined before use
+    day_label_map = {}
     date_col = 'date' if 'date' in df.columns else 'created_at'
     if date_col in df.columns:
         df['_date_parsed'] = pd.to_datetime(df[date_col], errors='coerce')
@@ -112,7 +123,6 @@ def process_data(docs):
         day_counts = df['_day_label'].dropna().value_counts()
         leads_per_day = dict(sorted(day_counts.items(), key=lambda x: int(x[0].split()[1])))
 
-    # Follow-up vs New
     followup_counts = {'New Lead': 0, 'Follow-up': 0}
     if 'is_follow_up_contact' in df.columns:
         for val in df['is_follow_up_contact']:
@@ -121,9 +131,8 @@ def process_data(docs):
             else:
                 followup_counts['New Lead'] += 1
 
-    # Recent leads
     recent_leads = []
-    all_reps = []   # ← FIX: always defined before use
+    all_reps = []
 
     def bool_flag(val):
         return val is True or str(val).strip().lower() == 'true'
@@ -131,7 +140,6 @@ def process_data(docs):
     for _, row in df.sort_values(date_col, ascending=False).iterrows():
         image_urls = parse_list_field(row.get('business_card_image_urls', []))
 
-        # Derive day label
         day_label = '—'
         try:
             d = pd.to_datetime(row.get(date_col)).date()
@@ -139,7 +147,6 @@ def process_data(docs):
         except:
             pass
 
-        # Derive categories from area_of_interest
         interests_raw = parse_list_field(row.get('area_of_interest', []))
         cats = list({
             i.split(' - ')[0].strip()
@@ -151,7 +158,6 @@ def process_data(docs):
             if i.strip().lower() in ALLOWED_CATS
         })
 
-        # Derive intent types from area_of_interest entries
         intent_set = set()
         SALES_CATS = {'oil', 'food', 'beverage'}
         for entry in interests_raw:
@@ -160,73 +166,69 @@ def process_data(docs):
                 intent_set.add('Sales')
             elif prefix == 'purchase':
                 intent_set.add('Purchase')
-            elif prefix == 'service' or prefix == 'services':
+            elif prefix in ('service', 'services'):
                 intent_set.add('Services')
             elif prefix:
                 intent_set.add('Others')
 
         recent_leads.append({
-            'name':             str(row.get('name', 'N/A')),
-            'organization':     str(row.get('organization', 'N/A')),
-            'designation':      str(row.get('designation', 'N/A')),
-            'entered_by':       str(row.get('entered_by_email', 'N/A')),
-            'meeting_with':     str(row.get('meeting_with', '—')) if pd.notna(row.get('meeting_with')) else '—',
-            'meeting_team':     str(row.get('meeting_with_team', '—')) if pd.notna(row.get('meeting_with_team')) else '—',
-            'time':             str(row.get(date_col, 'N/A')),
-            'is_follow_up':     bool_flag(row.get('is_follow_up_contact', False)),
-            'is_important':     bool_flag(row.get('is_import_contact', False)),
-            'image_urls':       image_urls,
-            'day':              day_label,
-            'categories':       cats,
-            'area_of_interest': ', '.join(interests_raw) if interests_raw else '',
-            'intent_types':     sorted(intent_set),
-            # ── New fields ──
-            'phone':            str(row.get('phone', '')) if pd.notna(row.get('phone', '')) else '',
-            'email':            str(row.get('email', '')) if pd.notna(row.get('email', '')) else '',
-            'company_strength': str(row.get('company_strength', '')) if pd.notna(row.get('company_strength', '')) else '',
-            'company_turnover': str(row.get('company_turnover', '')) if pd.notna(row.get('company_turnover', '')) else '',
-            'website':          str(row.get('website', '')) if pd.notna(row.get('website', '')) else '',
-            'remarks':          str(row.get('remarks', '')) if pd.notna(row.get('remarks', '')) else '',
-            'other_interest':   str(row.get('other_interest', '')) if pd.notna(row.get('other_interest', '')) else '',
-            'registration_id':  str(row.get('registration_id', '')) if pd.notna(row.get('registration_id', '')) else '',
-            'is_stock':         bool_flag(row.get('is_stock_contact', False)),
-            'simple_cam_url':   str(row.get('simple_camera_image_url', '')) if pd.notna(row.get('simple_camera_image_url', '')) else '',
-            'interested_in':    str(row.get('interested_in', '')) if pd.notna(row.get('interested_in', '')) else '',
-            'meeting_with_others': str(row.get('meeting_with_others', '')) if pd.notna(row.get('meeting_with_others', '')) else '',
-            'email_delivery_status': str(row.get('email_delivery_status', '')) if pd.notna(row.get('email_delivery_status', '')) else '',
+            'name':                  safe_str(row.get('name', 'N/A')),
+            'organization':          safe_str(row.get('organization', 'N/A')),
+            'designation':           safe_str(row.get('designation', 'N/A')),
+            'entered_by':            safe_str(row.get('entered_by_email', 'N/A')),
+            'meeting_with':          safe_str(row.get('meeting_with', '—')) or '—',
+            'meeting_team':          safe_str(row.get('meeting_with_team', '—')) or '—',
+            'time':                  safe_str(row.get(date_col, 'N/A')),
+            'is_follow_up':          bool_flag(row.get('is_follow_up_contact', False)),
+            'is_important':          bool_flag(row.get('is_import_contact', False)),
+            'image_urls':            image_urls,
+            'day':                   day_label,
+            'categories':            cats,
+            'area_of_interest':      ', '.join(interests_raw) if interests_raw else '',
+            'intent_types':          sorted(intent_set),
+            'phone':                 safe_str(row.get('phone', '')),
+            'email':                 safe_str(row.get('email', '')),
+            'company_strength':      safe_str(row.get('company_strength', '')),
+            'company_turnover':      safe_str(row.get('company_turnover', '')),
+            'website':               safe_str(row.get('website', '')),
+            'remarks':               safe_str(row.get('remarks', '')),
+            'other_interest':        safe_str(row.get('other_interest', '')),
+            'registration_id':       safe_str(row.get('registration_id', '')),
+            'is_stock':              bool_flag(row.get('is_stock_contact', False)),
+            'simple_cam_url':        safe_str(row.get('simple_camera_image_url', '')),
+            'interested_in':         safe_str(row.get('interested_in', '')),
+            'meeting_with_others':   safe_str(row.get('meeting_with_others', '')),
+            'email_delivery_status': safe_str(row.get('email_delivery_status', '')),
         })
 
-    # ← FIX: build all_reps from recent_leads after the loop
     all_reps = sorted(set(
         r.get('entered_by', '').split('@')[0]
         for r in recent_leads
         if r.get('entered_by') and r.get('entered_by') != 'N/A'
     ))
 
-    # Meeting With
     meeting_with_counts = {}
     if 'meeting_with' in df.columns:
         meeting_with_counts = df['meeting_with'].dropna().value_counts().to_dict()
 
-    # Meeting Team
     meeting_team_counts = {}
     if 'meeting_with_team' in df.columns:
         meeting_team_counts = df['meeting_with_team'].dropna().value_counts().to_dict()
 
     return {
-        'total_leads':        total_leads,
-        'leads_per_rep':      leads_per_rep,
-        'tablet_data':        tablet_data,
-        'interest_counts':    interest_counts,
-        'category_counts':    category_counts,
-        'item_counts':        item_counts,
-        'leads_per_day':      leads_per_day,
-        'followup_counts':    followup_counts,
-        'recent_leads':       recent_leads,
-        'all_reps':           all_reps,
+        'total_leads':         total_leads,
+        'leads_per_rep':       leads_per_rep,
+        'tablet_data':         tablet_data,
+        'interest_counts':     interest_counts,
+        'category_counts':     category_counts,
+        'item_counts':         item_counts,
+        'leads_per_day':       leads_per_day,
+        'followup_counts':     followup_counts,
+        'recent_leads':        recent_leads,
+        'all_reps':            all_reps,
         'meeting_with_counts': meeting_with_counts,
         'meeting_team_counts': meeting_team_counts,
-        'last_updated':       datetime.now().strftime('%d %b %Y, %H:%M:%S')
+        'last_updated':        datetime.now().strftime('%d %b %Y, %H:%M:%S')
     }
 
 all_docs = {}
@@ -239,8 +241,14 @@ def on_snapshot(col_snapshot, changes, read_time):
             all_docs.pop(doc.id, None)
         else:
             all_docs[doc.id] = doc
-    with data_lock:
-        latest_data = process_data(list(all_docs.values()))
+    try:
+        with data_lock:
+            latest_data = process_data(list(all_docs.values()))
+        print(f"✅ Data updated: {latest_data.get('total_leads', 0)} leads")
+    except Exception as e:
+        print(f"❌ process_data error: {e}")
+        import traceback; traceback.print_exc()
+        return
     payload = json.dumps(latest_data)
     for client_queue in list(sse_clients):
         try:
@@ -308,20 +316,20 @@ def export():
         flat = flatten_doc(doc)
         interests = parse_list_field(flat.get('area_of_interest', []))
         rows.append({
-            'name':             str(flat.get('name', '')),
-            'email':            str(flat.get('email', '')),
-            'phone':            str(flat.get('phone', '')),
-            'organization':     str(flat.get('organization', '')),
-            'designation':      str(flat.get('designation', '')),
-            'company_strength': str(flat.get('company_strength', '')),
-            'meeting_with':     str(flat.get('meeting_with', '')),
-            'meeting_team':     str(flat.get('meeting_with_team', '')),
+            'name':             safe_str(flat.get('name', '')),
+            'email':            safe_str(flat.get('email', '')),
+            'phone':            safe_str(flat.get('phone', '')),
+            'organization':     safe_str(flat.get('organization', '')),
+            'designation':      safe_str(flat.get('designation', '')),
+            'company_strength': safe_str(flat.get('company_strength', '')),
+            'meeting_with':     safe_str(flat.get('meeting_with', '')),
+            'meeting_team':     safe_str(flat.get('meeting_with_team', '')),
             'area_of_interest': ', '.join(interests),
-            'remarks':          str(flat.get('remarks', '')),
+            'remarks':          safe_str(flat.get('remarks', '')),
             'is_follow_up':     str(flat.get('is_follow_up_contact', '')),
             'is_important':     str(flat.get('is_import_contact', '')),
-            'captured_by':      str(flat.get('entered_by_email', '')),
-            'date':             str(flat.get('date', flat.get('created_at', ''))),
+            'captured_by':      safe_str(flat.get('entered_by_email', '')),
+            'date':             safe_str(flat.get('date', flat.get('created_at', ''))),
             'image_urls':       ', '.join(parse_list_field(flat.get('business_card_image_urls', []))),
         })
     rows.sort(key=lambda x: x['date'], reverse=True)
