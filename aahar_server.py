@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate(r"C:\Users\JWPL\Desktop\aahar-database.json")
+    cred = credentials.Certificate(r"C:\Users\JWPL\Desktop\Aahar-Live\aahar-database.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -93,7 +93,6 @@ def process_data(docs):
                         category_counts[cat] = category_counts.get(cat, 0) + 1
                         item_counts[item] = item_counts.get(item, 0) + 1
                 else:
-                    # Pure category with no sub-item — count category only, not as item
                     if interest.lower() in ALLOWED_CATS:
                         category_counts[interest] = category_counts.get(interest, 0) + 1
     interest_counts = dict(sorted(interest_counts.items(), key=lambda x: x[1], reverse=True))
@@ -102,6 +101,7 @@ def process_data(docs):
 
     # Leads per day — Day 1, Day 2, Day 3 ...
     leads_per_day = {}
+    day_label_map = {}   # ← FIX: always defined before use
     date_col = 'date' if 'date' in df.columns else 'created_at'
     if date_col in df.columns:
         df['_date_parsed'] = pd.to_datetime(df[date_col], errors='coerce')
@@ -123,27 +123,80 @@ def process_data(docs):
 
     # Recent leads
     recent_leads = []
+    all_reps = []   # ← FIX: always defined before use
+
     def bool_flag(val):
         return val is True or str(val).strip().lower() == 'true'
 
     for _, row in df.sort_values(date_col, ascending=False).iterrows():
         image_urls = parse_list_field(row.get('business_card_image_urls', []))
-        recent_leads.append({
-            'name': str(row.get('name', 'N/A')),
-            'organization': str(row.get('organization', 'N/A')),
-            'designation': str(row.get('designation', 'N/A')),
-            'entered_by': str(row.get('entered_by_email', 'N/A')),
-            'meeting_with': str(row.get('meeting_with', '—')) if pd.notna(row.get('meeting_with')) else '—',
-            'meeting_team': str(row.get('meeting_with_team', '—')) if pd.notna(row.get('meeting_with_team')) else '—',
-            'time': str(row.get(date_col, 'N/A')),
-            'is_follow_up': bool_flag(row.get('is_follow_up_contact', False)),
-            'is_important': bool_flag(row.get('is_import_contact', False)),
-            'image_urls': image_urls,
+
+        # Derive day label
+        day_label = '—'
+        try:
+            d = pd.to_datetime(row.get(date_col)).date()
+            day_label = day_label_map.get(d, '—')
+        except:
+            pass
+
+        # Derive categories from area_of_interest
+        interests_raw = parse_list_field(row.get('area_of_interest', []))
+        cats = list({
+            i.split(' - ')[0].strip()
+            for i in interests_raw
+            if i.split(' - ')[0].strip().lower() in ALLOWED_CATS
+        } | {
+            i.strip()
+            for i in interests_raw
+            if i.strip().lower() in ALLOWED_CATS
         })
 
+        # Derive intent types from area_of_interest entries
+        intent_set = set()
+        SALES_CATS = {'oil', 'food', 'beverage'}
+        for entry in interests_raw:
+            prefix = entry.split(' - ')[0].strip().lower()
+            if prefix in SALES_CATS:
+                intent_set.add('Sales')
+            elif prefix == 'purchase':
+                intent_set.add('Purchase')
+            elif prefix == 'service' or prefix == 'services':
+                intent_set.add('Services')
+            elif prefix:
+                intent_set.add('Others')
+
+        recent_leads.append({
+            'name':             str(row.get('name', 'N/A')),
+            'organization':     str(row.get('organization', 'N/A')),
+            'designation':      str(row.get('designation', 'N/A')),
+            'entered_by':       str(row.get('entered_by_email', 'N/A')),
+            'meeting_with':     str(row.get('meeting_with', '—')) if pd.notna(row.get('meeting_with')) else '—',
+            'meeting_team':     str(row.get('meeting_with_team', '—')) if pd.notna(row.get('meeting_with_team')) else '—',
+            'time':             str(row.get(date_col, 'N/A')),
+            'is_follow_up':     bool_flag(row.get('is_follow_up_contact', False)),
+            'is_important':     bool_flag(row.get('is_import_contact', False)),
+            'image_urls':       image_urls,
+            'day':              day_label,
+            'categories':       cats,
+            'area_of_interest': ', '.join(interests_raw) if interests_raw else '',
+            'intent_types':     sorted(intent_set),
+            # ── New fields ──
+            'phone':            str(row.get('phone', '')) if pd.notna(row.get('phone', '')) else '',
+            'email':            str(row.get('email', '')) if pd.notna(row.get('email', '')) else '',
+            'company_strength': str(row.get('company_strength', '')) if pd.notna(row.get('company_strength', '')) else '',
+            'company_turnover': str(row.get('company_turnover', '')) if pd.notna(row.get('company_turnover', '')) else '',
+            'website':          str(row.get('website', '')) if pd.notna(row.get('website', '')) else '',
+            'remarks':          str(row.get('remarks', '')) if pd.notna(row.get('remarks', '')) else '',
+            'other_interest':   str(row.get('other_interest', '')) if pd.notna(row.get('other_interest', '')) else '',
+            'registration_id':  str(row.get('registration_id', '')) if pd.notna(row.get('registration_id', '')) else '',
+            'is_stock':         bool_flag(row.get('is_stock_contact', False)),
+        })
+
+    # ← FIX: build all_reps from recent_leads after the loop
     all_reps = sorted(set(
-        r.get('entered_by','').split('@')[0]
-        for r in recent_leads if r.get('entered_by') and r.get('entered_by') != 'N/A'
+        r.get('entered_by', '').split('@')[0]
+        for r in recent_leads
+        if r.get('entered_by') and r.get('entered_by') != 'N/A'
     ))
 
     # Meeting With
@@ -157,19 +210,19 @@ def process_data(docs):
         meeting_team_counts = df['meeting_with_team'].dropna().value_counts().to_dict()
 
     return {
-        'total_leads': total_leads,
-        'leads_per_rep': leads_per_rep,
-        'tablet_data': tablet_data,
-        'interest_counts': interest_counts,
-        'category_counts': category_counts,
-        'item_counts': item_counts,
-        'leads_per_day': leads_per_day,
-        'followup_counts': followup_counts,
-        'recent_leads': recent_leads,
-        'all_reps': all_reps,
+        'total_leads':        total_leads,
+        'leads_per_rep':      leads_per_rep,
+        'tablet_data':        tablet_data,
+        'interest_counts':    interest_counts,
+        'category_counts':    category_counts,
+        'item_counts':        item_counts,
+        'leads_per_day':      leads_per_day,
+        'followup_counts':    followup_counts,
+        'recent_leads':       recent_leads,
+        'all_reps':           all_reps,
         'meeting_with_counts': meeting_with_counts,
         'meeting_team_counts': meeting_team_counts,
-        'last_updated': datetime.now().strftime('%d %b %Y, %H:%M:%S')
+        'last_updated':       datetime.now().strftime('%d %b %Y, %H:%M:%S')
     }
 
 all_docs = {}
@@ -194,7 +247,6 @@ def on_snapshot(col_snapshot, changes, read_time):
 col_ref = db.collection("leads")
 col_ref.on_snapshot(on_snapshot)
 
-# Serve the dashboard HTML directly so there's no file:// CORS issue
 DASHBOARD_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.route('/')
@@ -268,7 +320,6 @@ def export():
             'date':             str(flat.get('date', flat.get('created_at', ''))),
             'image_urls':       ', '.join(parse_list_field(flat.get('business_card_image_urls', []))),
         })
-    # Sort by date descending
     rows.sort(key=lambda x: x['date'], reverse=True)
     return jsonify(rows)
 

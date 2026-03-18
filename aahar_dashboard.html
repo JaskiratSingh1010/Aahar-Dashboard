@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Aahar 2026 — Live Dashboard</title>
+<title>Aahar 2026  Live Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -506,10 +506,11 @@ tbody tr:hover td { background: var(--purple-lt); }
 }
 
 .filter-count {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-4);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink-2);
   margin-left: 4px;
+  letter-spacing: -0.3px;
 }
 
 .badge-important {
@@ -676,6 +677,366 @@ tbody tr:hover td { background: var(--purple-lt); }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .grid > * { grid-column: 1 / -1 !important; }
 }
+
+/* ── FILTER PANEL DROPDOWN ── */
+.filter-dropdown-wrap {
+  position: relative;
+}
+
+.filter-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 300;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 14px;
+  min-width: 480px;
+  animation: fadeSlide 0.18s ease;
+}
+
+.filter-panel.open { display: block; }
+
+.fp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fp-col { display: flex; flex-direction: column; gap: 8px; }
+
+.fp-head {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--ink-3); margin-bottom: 2px;
+}
+
+.fp-field { display: flex; flex-direction: column; gap: 3px; }
+
+.fp-field label {
+  font-size: 10.5px; font-weight: 600; color: var(--ink-3);
+}
+
+.fp-field select {
+  height: 28px; padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 11.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; outline: none;
+  transition: border-color 0.15s;
+}
+
+.fp-field select:focus { border-color: var(--purple); background: var(--card); }
+
+.fp-divider {
+  height: 1px; background: var(--border);
+  margin: 12px 0 10px;
+}
+
+.fp-footer {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-top: 12px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+
+.fp-clear {
+  font-size: 11px; font-weight: 600;
+  color: var(--red); background: var(--red-lt);
+  border: 1px solid #FCA5B0; border-radius: var(--radius-sm);
+  padding: 4px 12px; cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+
+.fp-clear:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+.fp-done {
+  font-size: 11px; font-weight: 700;
+  color: #fff; background: var(--purple);
+  border: none; border-radius: var(--radius-sm);
+  padding: 4px 16px; cursor: pointer; font-family: inherit;
+  box-shadow: 0 2px 6px rgba(124,92,252,0.3);
+  transition: all 0.15s;
+}
+
+.fp-done:hover { background: #6A4AE8; }
+
+/* Column chips */
+.col-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.col-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--ink-3);
+  transition: all 0.15s; user-select: none;
+}
+
+.col-chip.on {
+  background: var(--purple-lt); color: var(--purple);
+  border-color: #C4B5FD;
+}
+
+.col-chip.always {
+  opacity: 0.5; cursor: not-allowed;
+}
+
+/* Active filter pills */
+.active-pills {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  align-items: center;
+}
+
+.active-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  background: var(--indigo-bg); color: var(--indigo);
+  border: 1px solid #C4B5FD;
+  animation: slide-in 0.2s ease;
+}
+
+.pill-x {
+  cursor: pointer; font-size: 11px; line-height: 1;
+  opacity: 0.6; transition: opacity 0.1s;
+}
+
+.pill-x:hover { opacity: 1; }
+
+.filter-drop-btn.active {
+  background: var(--purple);
+  color: #fff;
+  border-color: var(--purple);
+  box-shadow: 0 2px 8px rgba(124,92,252,0.25);
+}
+
+/* ── INTEREST COLUMN ── */
+td.interest-td { width: 180px; min-width: 180px; max-width: 180px; }
+
+.interest-cell {
+  display: flex; align-items: center; gap: 5px;
+  overflow: hidden; white-space: nowrap;
+}
+
+.interest-chip {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--ink-2);
+  line-height: 1.5; white-space: nowrap; flex-shrink: 0;
+  max-width: 130px; overflow: hidden; text-overflow: ellipsis;
+}
+.interest-chip.chip-oil      { background: #FEF3E0; color: #B45309; border-color: #FCD34D; }
+.interest-chip.chip-beverage { background: #E2F8F6; color: #0E7490; border-color: #99E6E0; }
+.interest-chip.chip-food     { background: #E2F9F2; color: #065F46; border-color: #6EE7B7; }
+.interest-chip.chip-others   { background: #F2EDFF; color: #6D28D9; border-color: #C4B5FD; }
+.interest-chip.chip-remark   { background: var(--surface); color: var(--ink-3); border-color: var(--border); font-style: italic; }
+
+.interest-plus-btn {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 20px; padding: 0 7px; border-radius: 20px;
+  background: var(--purple-lt); color: var(--purple);
+  border: 1px solid #C4B5FD;
+  font-size: 10px; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+  transition: all 0.15s; white-space: nowrap;
+}
+.interest-plus-btn:hover { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+/* ── INTEREST DETAIL MODAL ── */
+.int-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(28,26,58,0.55); z-index: 2000;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.int-modal-overlay.open { display: flex; }
+
+.int-modal-box {
+  background: #fff; border-radius: 16px;
+  padding: 24px 26px 22px; max-width: 540px; width: 92vw;
+  box-shadow: 0 32px 80px rgba(28,26,58,0.22);
+  position: relative; animation: fadeSlide 0.2s ease;
+}
+
+.int-modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; font-size: 14px; color: var(--ink-3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.int-modal-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+.int-modal-lead {
+  display: flex; align-items: flex-start;
+  gap: 10px; margin-bottom: 16px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+
+.int-modal-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #7C5CFC, #A07CF8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+}
+
+.int-modal-lead-info { display: flex; flex-direction: column; gap: 2px; }
+
+.int-modal-name {
+  font-size: 14px; font-weight: 800; color: var(--ink);
+  letter-spacing: -0.3px;
+}
+
+.int-modal-org {
+  font-size: 11px; color: var(--ink-4); font-weight: 500;
+}
+
+.int-modal-section-label {
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.9px; color: var(--ink-4); margin-bottom: 10px;
+}
+
+.int-modal-chips {
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+
+.int-modal-chip {
+  display: inline-flex; align-items: center;
+  font-size: 11.5px; font-weight: 600;
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--ink-2);
+  line-height: 1.4;
+}
+.int-modal-chip.chip-oil      { background: #FEF3E0; color: #B45309; border-color: #FCD34D; }
+.int-modal-chip.chip-beverage { background: #E2F8F6; color: #0E7490; border-color: #99E6E0; }
+.int-modal-chip.chip-food     { background: #E2F9F2; color: #065F46; border-color: #6EE7B7; }
+.int-modal-chip.chip-others   { background: #F2EDFF; color: #6D28D9; border-color: #C4B5FD; }
+.int-modal-chip.chip-remark   { background: #FFFBEB; color: #92400E; border-color: #FDE68A; font-style: italic; line-height: 1.6; }
+/* ── EXCEL ITEM DROPDOWN ── */
+#itemDropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 9999;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 8px 0;
+  min-width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: fadeSlide 0.15s ease;
+}
+#itemDropdown.open { display: block; }
+
+.idd-search {
+  width: calc(100% - 16px);
+  margin: 0 8px 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px; font-family: inherit;
+  outline: none;
+}
+.idd-search:focus { border-color: var(--purple); }
+
+.idd-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px; cursor: pointer;
+  font-size: 11.5px; font-weight: 500; color: var(--ink-2);
+  transition: background 0.1s;
+}
+.idd-item:hover { background: var(--purple-lt); }
+.idd-item.checked { color: var(--purple); font-weight: 700; }
+
+.idd-item input[type=checkbox] {
+  accent-color: var(--purple);
+  width: 13px; height: 13px; flex-shrink: 0;
+}
+
+.idd-footer {
+  display: flex; justify-content: space-between;
+  padding: 6px 10px 2px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.idd-footer button {
+  font-size: 10px; font-weight: 700;
+  border: none; background: none;
+  cursor: pointer; font-family: inherit;
+  padding: 2px 6px; border-radius: 4px;
+}
+.idd-footer .idd-clear { color: var(--red); }
+.idd-footer .idd-clear:hover { background: var(--red-lt); }
+.idd-footer .idd-all { color: var(--purple); }
+.idd-footer .idd-all:hover { background: var(--purple-lt); }
+
+/* ── DRAGGABLE COLUMN PICKER ── */
+.col-list { display: flex; flex-direction: column; gap: 3px; }
+
+.col-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: var(--surface); cursor: grab;
+  transition: background 0.12s, border-color 0.12s;
+  user-select: none;
+}
+.col-list-item:hover { background: var(--purple-lt); border-color: #C4B5FD; }
+.col-list-item.dragging { opacity: 0.4; }
+.col-list-item.drag-over { border-color: var(--purple); background: var(--purple-lt); }
+
+.col-drag-handle {
+  color: var(--ink-4); font-size: 12px; cursor: grab; flex-shrink: 0;
+}
+
+.col-list-toggle {
+  width: 14px; height: 14px; flex-shrink: 0; cursor: pointer;
+  accent-color: var(--purple);
+}
+
+.col-list-label {
+  font-size: 11.5px; font-weight: 600; color: var(--ink-2);
+  flex: 1;
+}
+.col-list-label.always { color: var(--ink-4); font-style: italic; }
+
+/* Header drag highlight */
+thead th.th-drag-over {
+  background: var(--purple-lt) !important;
+  outline: 2px dashed var(--purple);
+}
+thead th[draggable] { cursor: grab; }
+thead th[draggable]:active { cursor: grabbing; }
+
+/* ── INTENT COLUMN ── */
+td.intent-td { width: 120px; min-width: 120px; max-width: 120px; }
+
+.intent-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.intent-chip {
+  display: inline-flex; align-items: center;
+  font-size: 9.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: 0.2px; white-space: nowrap;
+}
+.intent-chip.ic-sales     { background: #E2F9F2; color: #065F46; border: 1px solid #6EE7B7; }
+.intent-chip.ic-purchase  { background: #EDE8FF; color: #5B21B6; border: 1px solid #C4B5FD; }
+.intent-chip.ic-services  { background: #E2F8F6; color: #0E7490; border: 1px solid #99E6E0; }
+.intent-chip.ic-others    { background: #FEF3E0; color: #B45309; border: 1px solid #FCD34D; }
 </style>
 </head>
 <body>
@@ -713,7 +1074,7 @@ tbody tr:hover td { background: var(--purple-lt); }
 
 <div class="page">
 
-  <!-- ── KPI ROW (fixed) ── -->
+  <!-- ── KPI ROW ── -->
   <div class="kpi-row">
     <div class="kpi k1 hero">
       <div class="kpi-top"><span class="kpi-tag">Total Leads</span><div class="kpi-icon-wrap">🎯</div></div>
@@ -721,7 +1082,7 @@ tbody tr:hover td { background: var(--purple-lt); }
       <div class="kpi-meta">Captured across all days &amp; tablets</div>
     </div>
     <div class="kpi k2">
-      <div class="kpi-top"><span class="kpi-tag">Top Representer</span><div class="kpi-icon-wrap">🏆</div></div>
+      <div class="kpi-top"><span class="kpi-tag">Top Rep</span><div class="kpi-icon-wrap">🏆</div></div>
       <div class="kpi-num" id="kRepN">—</div>
       <div class="kpi-meta"><b id="kRepLbl">—</b></div>
     </div>
@@ -741,6 +1102,7 @@ tbody tr:hover td { background: var(--purple-lt); }
       <div class="kpi-meta">Out of 14 deployed</div>
     </div>
   </div>
+
 
   <!-- ── CAROUSEL ── -->
   <div class="carousel-wrap">
@@ -771,7 +1133,10 @@ tbody tr:hover td { background: var(--purple-lt); }
           <div class="card g4">
             <div class="card-h">
               <div class="card-h-left"><span class="card-icon">📱</span><span class="card-title">Tablet-wise Leads</span></div>
-              <span class="tag">14 Deployed</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="tag">14 Deployed</span>
+                <span class="tag" id="tabletSum" style="background:var(--green-lt);color:var(--green);border:1px solid #A8EDD8">— total</span>
+              </div>
             </div>
             <div class="divider"></div>
             <div class="tiles" id="tilesGrid"><div class="empty">Waiting…</div></div>
@@ -842,30 +1207,117 @@ tbody tr:hover td { background: var(--purple-lt); }
     </div><!-- /slides -->
   </div><!-- /carousel-wrap -->
 
-  <!-- ── LEADS TABLE (fixed below carousel) ── -->
-  <div class="card" style="margin-top:14px">
+  <!-- ── FILTER BAR ── -->
+  <div class="card" style="margin-top:12px;margin-bottom:12px;padding:12px 18px">
+    <div class="filter-bar">
+      <select id="filterRep" onchange="applyFilters()">
+        <option value="">All Users</option>
+      </select>
+      <button class="filter-btn" id="btnImportant" onclick="toggleFilter('important')" title="Important only">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        Important
+      </button>
+      <button class="filter-btn" id="btnFollowup" onclick="toggleFilter('followup')" title="Follow-up only">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Follow-up
+      </button>
+
+      <!-- View & Filter dropdown -->
+      <div class="filter-dropdown-wrap" id="filterDropWrap">
+        <button class="filter-btn filter-drop-btn" id="filterDropBtn" onclick="toggleFilterPanel()">
+          🎛 View &amp; Filter <span id="filterDropArrow" style="font-size:9px;margin-left:2px">▾</span>
+        </button>
+        <div class="filter-panel" id="filterPanel" style="min-width:480px">
+          <div class="fp-row" style="grid-template-columns:1fr 1fr">
+            <div class="fp-col">
+              <div class="fp-head">Filters</div>
+              <div class="fp-field">
+                <label>Day</label>
+                <select id="filterDay" onchange="applyFilters()"><option value="">All Days</option></select>
+              </div>
+              <div class="fp-field">
+                <label>Primary Category</label>
+                <select id="filterCategory" onchange="onCategoryChange()"><option value="">All Categories</option></select>
+              </div>
+              <div class="fp-field">
+                <label>Secondary Category</label>
+                <select id="filterCategory2" onchange="applyFilters()"><option value="">Any / None</option></select>
+              </div>
+
+              <div class="fp-field">
+                <label>Meeting With</label>
+                <select id="filterMeetingWith" onchange="applyFilters()"><option value="">Anyone</option></select>
+              </div>
+              <div class="fp-field">
+                <label>Team</label>
+                <select id="filterMeetingTeam" onchange="applyFilters()"><option value="">All Teams</option></select>
+              </div>
+              <div class="fp-field">
+                <label>Primary Intent</label>
+                <select id="filterIntent" onchange="applyFilters()">
+                  <option value="">All</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Purchase">Purchase</option>
+                  <option value="Services">Services</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+              <div class="fp-field">
+                <label>Secondary Intent</label>
+                <select id="filterIntent2" onchange="applyFilters()">
+                  <option value="">Any / None</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Purchase">Purchase</option>
+                  <option value="Services">Services</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+            </div>
+            <div class="fp-col">
+              <div class="fp-head">Visible Columns</div>
+              <div class="col-chips" id="colChips"></div>
+            </div>
+          </div>
+          <div class="fp-footer">
+            <button class="fp-clear" onclick="clearAllFilters()">✕ Clear All Filters</button>
+            <button class="fp-done" onclick="closeFilterPanel()">Done</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Active filter pills -->
+      <div class="active-pills" id="activePills"></div>
+
+      <!-- Items dropdown button — shown only after category selected -->
+      <div style="position:relative" id="itemBtnWrap">
+        <button class="filter-btn" id="itemFilterBtn" style="display:none" onclick="toggleItemDropdown(event)">
+          📦 Items <span id="itemBtnCount"></span> <span style="font-size:9px">▾</span>
+        </button>
+        <div id="itemDropdown">
+          <input class="idd-search" id="iddSearch" type="text" placeholder="Search items…" oninput="renderIddItems()">
+          <div id="iddList"></div>
+          <div class="idd-footer">
+            <button class="idd-clear" onclick="clearItemFilter()">✕ Clear</button>
+            <button class="idd-all" onclick="selectAllItems()">Select All</button>
+          </div>
+        </div>
+      </div>
+
+      <span class="filter-count" id="filterCount"></span>
+    </div>
+  </div>
+
+  <!-- ── LEADS TABLE ── -->
+  <div class="card" style="margin-top:0">
     <div class="card-h">
       <div class="card-h-left"><span class="card-icon">⚡</span><span class="card-title">All Leads</span></div>
-      <div class="filter-bar">
-        <select id="filterRep" onchange="applyFilters()">
-          <option value="">All Users</option>
-        </select>
-        <button class="filter-btn" id="btnImportant" onclick="toggleFilter('important')" title="Important Contacts">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
-          Important
-        </button>
-        <button class="filter-btn" id="btnFollowup" onclick="toggleFilter('followup')" title="Follow-up Contacts">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-          Follow-up
-        </button>
-        <span class="filter-count" id="filterCount"></span>
-      </div>
     </div>
     <div class="divider"></div>
     <div class="tbl-wrap">
       <table>
         <thead>
-          <tr>
+          <tr id="tblHead">
             <th>Name</th><th>Organization</th><th>Card</th><th>Designation</th>
             <th>Meeting With</th><th>Team</th><th>Captured By</th><th>Time</th><th>Flags</th>
           </tr>
@@ -1035,13 +1487,35 @@ function rType(data) {
 }
 
 // ── Tablets ──
+const TABLET_NAMES = {
+  't1': 'Sunny Vg', 't2': 'Happy Vg', 't3': 'Manav sir',
+  't4': 'Tejpal Vg', 't5': 'Gurnam Vg', 't6': 'G.Marwah Vg',
+  't7': 'Sunpreet sir', 't8': 'Brahmdeep sir', 'vipdesk': 'Japneet',
+  'purchase': 'Purchase', 'frontdesk2': 'Front Desk 2',
+  'developer': 'Developer', 'gurvinder': 'Gurvinder', 'neha': 'Neha',
+  'shunty': 'Shunty',
+};
+
+function tabletLabel(email) {
+  const id = email.split('@')[0].toLowerCase();
+  return TABLET_NAMES[id] || id;
+}
+
 function rTiles(data) {
   const el = document.getElementById('tilesGrid');
-  const e = Object.entries(data);
+  const e = Object.entries(data).sort((a, b) => b[1] - a[1]);
   if (!e.length) { el.innerHTML='<div class="empty">No data yet</div>'; return; }
-  el.innerHTML = e.map(([email,count])=>{
-    const name = email.split('@')[0];
-    return `<div class="tile"><div class="tile-n">${count}</div><div class="tile-lbl">${name.length>10?name.slice(0,9)+'…':name}</div></div>`;
+  const total = e.reduce((s, [, v]) => s + v, 0);
+  const sumEl = document.getElementById('tabletSum');
+  if (sumEl) sumEl.textContent = total + ' total';
+  el.innerHTML = e.map(([email, count]) => {
+    const label = tabletLabel(email);
+    const id    = email.split('@')[0].toLowerCase();
+    return `<div class="tile">
+      <div class="tile-n">${count}</div>
+      <div class="tile-lbl">${label}</div>
+      ${TABLET_NAMES[id] ? `<div style="font-size:8px;color:var(--ink-4);margin-top:1px">${id}</div>` : ''}
+    </div>`;
   }).join('');
 }
 
@@ -1063,89 +1537,752 @@ function rBars(id, data, palette) {
   }).join('');
 }
 
-// ── Recent Leads table ──
+// ═══════════════════════════════════════════════════
+// ── COLUMN DEFINITIONS ──
+// ═══════════════════════════════════════════════════
+const COL_DEFS = [
+  { key: 'name',             label: 'Name',             always: true  },
+  { key: 'org',              label: 'Organization',     always: false },
+  { key: 'card',             label: 'Card',             always: false },
+  { key: 'desig',            label: 'Designation',      always: false },
+  { key: 'phone',            label: 'Phone',            always: false },
+  { key: 'email_col',        label: 'Email',            always: false },
+  { key: 'interest',         label: 'Area of Interest', always: false },
+  { key: 'meeting',          label: 'Meeting With',     always: false },
+  { key: 'team',             label: 'Team',             always: false },
+  { key: 'rep',              label: 'Captured By',      always: false },
+  { key: 'time',             label: 'Time',             always: false },
+  { key: 'flags',            label: 'Flags',            always: false },
+  { key: 'intent',           label: 'Intent',           always: false },
+  { key: 'co_strength',      label: 'Co. Strength',     always: false },
+  { key: 'co_turnover',      label: 'Turnover',         always: false },
+  { key: 'website',          label: 'Website',          always: false },
+  { key: 'remarks',          label: 'Remarks',          always: false },
+  { key: 'other_interest',   label: 'Other Interest',   always: false },
+  { key: 'reg_id',           label: 'Reg. ID',          always: false },
+  { key: 'is_stock',         label: 'Stock Contact',    always: false },
+];
+
+// Default: show first 9 columns only, rest hidden
+const DEFAULT_VISIBLE = new Set(['name','org','card','desig','interest','meeting','team','rep','time','flags','intent']);
+let visibleCols = Object.fromEntries(COL_DEFS.map(c => [c.key, DEFAULT_VISIBLE.has(c.key)]));
+
+// Column order — drag to reorder
+let colOrder = COL_DEFS.map(c => c.key);
+
+// ═══════════════════════════════════════════════════
+// ── FILTER STATE ──
+// ═══════════════════════════════════════════════════
 let allLeads = [];
-let filterState = { rep: '', important: false, followup: false };
+let filterState = {
+  rep: '', important: false, followup: false,
+  day: '', category: '', category2: '', meetingWith: '', meetingTeam: '',
+  intent: '', intent2: '', items: []  // selected items — OR logic
+};
+
+// ── Populate dynamic dropdowns from live data ──
+function populateDropdowns(leads) {
+  function fill(id, values, placeholder) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${placeholder}</option>` +
+      [...new Set(values.filter(Boolean))].sort()
+        .map(v => `<option value="${v}" ${v === cur ? 'selected' : ''}>${v}</option>`).join('');
+  }
+  fill('filterDay',         leads.map(l => l.day),                                      'All Days');
+  fill('filterCategory',    leads.flatMap(l => l.categories || []),                     'All Categories');
+  fill('filterCategory2',   leads.flatMap(l => l.categories || []),                     'Any / None');
+  fill('filterMeetingWith', leads.map(l => l.meeting_with).filter(v => v && v !== '—'), 'Anyone');
+  fill('filterMeetingTeam', leads.map(l => l.meeting_team).filter(v => v && v !== '—'), 'All Teams');
+}
 
 function populateRepFilter(reps) {
   const sel = document.getElementById('filterRep');
   const cur = sel.value;
   sel.innerHTML = '<option value="">All Users</option>' +
-    reps.map(r => `<option value="${r}" ${r===cur?'selected':''}>${r}</option>`).join('');
+    reps.map(r => `<option value="${r}" ${r === cur ? 'selected' : ''}>${r}</option>`).join('');
 }
 
+// ── Draggable column picker ──
+function buildColChips() { buildColList(); } // alias for existing callers
+
+function buildColList() {
+  const wrap = document.getElementById('colChips');
+  if (!wrap) return;
+  wrap.className = 'col-list';
+  wrap.innerHTML = colOrder.map(key => {
+    const def = COL_DEFS.find(c => c.key === key);
+    if (!def) return '';
+    const checked = visibleCols[key];
+    return `<div class="col-list-item" draggable="true"
+          data-key="${key}"
+          ondragstart="pickerDragStart(event)"
+          ondragover="pickerDragOver(event)"
+          ondrop="pickerDrop(event)"
+          ondragleave="pickerDragLeave(event)"
+          ondragend="pickerDragEnd(event)">
+      <span class="col-drag-handle">☰</span>
+      <input class="col-list-toggle" type="checkbox" ${checked ? 'checked' : ''}
+        ${def.always ? 'disabled' : ''}
+        onchange="toggleCol('${key}')">
+      <span class="col-list-label ${def.always ? 'always' : ''}">${def.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleCol(key) {
+  const def = COL_DEFS.find(c => c.key === key);
+  if (def?.always) return;
+  visibleCols[key] = !visibleCols[key];
+  buildColList();
+  renderTableHeader();
+  applyFilters();
+}
+
+// ── Picker panel drag-drop ──
+let pickerDragKey = null;
+
+function pickerDragStart(e) {
+  pickerDragKey = e.currentTarget.dataset.key;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function pickerDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function pickerDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function pickerDrop(e) {
+  e.preventDefault();
+  const targetKey = e.currentTarget.dataset.key;
+  e.currentTarget.classList.remove('drag-over');
+  if (!pickerDragKey || pickerDragKey === targetKey) return;
+  const from = colOrder.indexOf(pickerDragKey);
+  const to   = colOrder.indexOf(targetKey);
+  colOrder.splice(from, 1);
+  colOrder.splice(to, 0, pickerDragKey);
+  buildColList();
+  renderTableHeader();
+  applyFilters();
+}
+
+function pickerDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  pickerDragKey = null;
+}
+
+// ── Header drag-drop ──
+let headerDragKey = null;
+
+function headerDragStart(e) {
+  headerDragKey = e.currentTarget.dataset.key;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function headerDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('th-drag-over');
+}
+
+function headerDragLeave(e) {
+  e.currentTarget.classList.remove('th-drag-over');
+}
+
+function headerDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('th-drag-over');
+  const targetKey = e.currentTarget.dataset.key;
+  if (!headerDragKey || headerDragKey === targetKey) return;
+  const from = colOrder.indexOf(headerDragKey);
+  const to   = colOrder.indexOf(targetKey);
+  colOrder.splice(from, 1);
+  colOrder.splice(to, 0, headerDragKey);
+  buildColList();
+  renderTableHeader();
+  applyFilters();
+}
+
+function headerDragEnd(e) {
+  headerDragKey = null;
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('th-drag-over'));
+}
+
+function renderTableHeader() {
+  const headerRow = document.getElementById('tblHead');
+  if (!headerRow) return;
+  const visibleOrdered = colOrder.filter(k => visibleCols[k]);
+  headerRow.innerHTML = visibleOrdered.map(k => {
+    const def = COL_DEFS.find(c => c.key === k);
+    if (!def) return '';
+    if (k === 'interest') {
+      const active = filterState.items.length > 0;
+      return `<th draggable="true" data-key="${k}"
+          ondragstart="headerDragStart(event)" ondragover="headerDragOver(event)"
+          ondragleave="headerDragLeave(event)" ondrop="headerDrop(event)" ondragend="headerDragEnd(event)"
+          style="position:relative;white-space:nowrap">
+        ${def.label}
+        <button onclick="toggleItemDropdown(event)" style="
+          background:${active ? 'var(--purple)' : 'transparent'};
+          color:${active ? '#fff' : 'var(--ink-4)'};
+          border:1px solid ${active ? 'var(--purple)' : 'var(--border)'};
+          border-radius:4px;padding:1px 5px;font-size:9px;
+          cursor:pointer;margin-left:4px;font-family:inherit;font-weight:700;
+        ">▾${active ? ' '+filterState.items.length : ''}</button>
+      </th>`;
+    }
+    return `<th draggable="true" data-key="${k}"
+        ondragstart="headerDragStart(event)" ondragover="headerDragOver(event)"
+        ondragleave="headerDragLeave(event)" ondrop="headerDrop(event)" ondragend="headerDragEnd(event)">
+      ${def.label}
+    </th>`;
+  }).join('');
+}
+
+// ── Filter panel open / close ──
+function toggleFilterPanel() {
+  const panel = document.getElementById('filterPanel');
+  const btn   = document.getElementById('filterDropBtn');
+  const open  = panel.classList.toggle('open');
+  btn.classList.toggle('active', open);
+  document.getElementById('filterDropArrow').textContent = open ? '▴' : '▾';
+  if (open) buildColChips();
+}
+
+function closeFilterPanel() {
+  document.getElementById('filterPanel').classList.remove('open');
+  document.getElementById('filterDropBtn').classList.remove('active');
+  document.getElementById('filterDropArrow').textContent = '▾';
+  const ip = document.getElementById('itemPanel');
+  if (ip) ip.style.display = 'none';
+}
+
+// Close panel on outside click
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('filterDropWrap');
+  if (wrap && !wrap.contains(e.target)) closeFilterPanel();
+});
+
+// ── Active filter pills config ──
+const PILL_CONFIG = [
+  { state: 'day',         label: v => `Day: ${v}`,          clear: () => { filterState.day='';         document.getElementById('filterDay').value='';         applyFilters(); } },
+  { state: 'category',    label: v => `Cat: ${v}`,          clear: () => { filterState.category='';    document.getElementById('filterCategory').value='';    applyFilters(); } },
+  { state: 'category2',   label: v => `Cat2: ${v}`,         clear: () => { filterState.category2='';   document.getElementById('filterCategory2').value='';   applyFilters(); } },
+  { state: 'meetingWith', label: v => `With: ${v}`,         clear: () => { filterState.meetingWith=''; document.getElementById('filterMeetingWith').value=''; applyFilters(); } },
+  { state: 'meetingTeam', label: v => `Team: ${v}`,         clear: () => { filterState.meetingTeam=''; document.getElementById('filterMeetingTeam').value=''; applyFilters(); } },
+  { state: 'intent',      label: v => `Intent: ${v}`,       clear: () => { filterState.intent='';      document.getElementById('filterIntent').value='';      applyFilters(); } },
+  { state: 'intent2',     label: v => `Intent2: ${v}`,      clear: () => { filterState.intent2='';     document.getElementById('filterIntent2').value='';     applyFilters(); } },
+  { state: 'important',   label: () => '⚡ Important',       clear: () => { filterState.important=false; document.getElementById('btnImportant').classList.remove('active'); applyFilters(); } },
+  { state: 'followup',    label: () => '🚩 Follow-up',      clear: () => { filterState.followup=false;  document.getElementById('btnFollowup').classList.remove('active');  applyFilters(); } },
+  // items handled separately below
+];
+
+function updateActivePills() {
+  const wrap = document.getElementById('activePills');
+  let pills = '';
+  PILL_CONFIG.forEach((cfg, i) => {
+    const val = filterState[cfg.state];
+    if (!val) return;
+    pills += `<span class="active-pill">${cfg.label(val)}<span class="pill-x" onclick="PILL_CONFIG[${i}].clear()">×</span></span>`;
+  });
+  // Item pills
+  filterState.items.forEach(item => {
+    pills += `<span class="active-pill" style="background:var(--green-lt);color:var(--green);border-color:#A8EDD8">📦 ${item}<span class="pill-x" onclick="toggleItem('${item.replace(/'/g,"\\'")}')">×</span></span>`;
+  });
+  wrap.innerHTML = pills;
+
+  // Highlight dropdown button when any advanced filter is active
+  const hasAdvanced = ['day','category','category2','meetingWith','meetingTeam','intent','intent2'].some(k => filterState[k]) || filterState.items.length > 0;
+  const panelOpen   = document.getElementById('filterPanel').classList.contains('open');
+  document.getElementById('filterDropBtn').classList.toggle('active', hasAdvanced || panelOpen);
+
+  // Show/hide "Filtered" badge on carousel header
+  const anyFilter = Object.values(filterState).some(v => Array.isArray(v) ? v.length > 0 : Boolean(v));
+  let badge = document.getElementById('chartFilterBadge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.id = 'chartFilterBadge';
+    badge.style.cssText = 'font-size:10px;font-weight:700;background:#EDE8FF;color:#7C5CFC;border:1px solid #C4B5FD;border-radius:20px;padding:2px 10px;margin-left:8px;';
+    badge.textContent = '⚡ Filtered view';
+    document.getElementById('slideLabel').after(badge);
+  }
+  badge.style.display = anyFilter ? 'inline-flex' : 'none';
+}
+
+// ── Clear all filters ──
+function clearAllFilters() {
+  filterState = { rep: '', important: false, followup: false, day: '', category: '', category2: '', meetingWith: '', meetingTeam: '', intent: '', intent2: '', items: [] };
+  ['filterRep','filterDay','filterCategory','filterCategory2','filterMeetingWith','filterMeetingTeam','filterIntent','filterIntent2'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('btnImportant').classList.remove('active');
+  document.getElementById('btnFollowup').classList.remove('active');
+  const dd = document.getElementById('itemDropdown');
+  if (dd) dd.classList.remove('open');
+  const itemBtn = document.getElementById('itemFilterBtn');
+  if (itemBtn) itemBtn.style.display = 'none';
+  renderTableHeader();
+  applyFilters();
+}
+
+// ── Toggle Important / Follow-up — independent, can both be active ──
 function toggleFilter(type) {
   filterState[type] = !filterState[type];
-  document.getElementById(type==='important'?'btnImportant':'btnFollowup')
+  document.getElementById(type === 'important' ? 'btnImportant' : 'btnFollowup')
     .classList.toggle('active', filterState[type]);
   applyFilters();
 }
 
-function applyFilters() {
-  filterState.rep = document.getElementById('filterRep').value;
-  let filtered = allLeads.filter(l => {
-    if (filterState.rep && l.entered_by.split('@')[0] !== filterState.rep) return false;
-    if (filterState.important && !l.is_important) return false;
-    if (filterState.followup && !l.is_follow_up) return false;
-    return true;
+// ── Client-side aggregation from filtered leads ──
+const SALES_CATS_CLIENT = new Set(['oil','food','beverage']);
+const ALLOWED_CATS_CLIENT = new Set(['oil','food','beverage','others']);
+
+function aggregateFromLeads(leads) {
+  const dayMap = {}, catMap = {}, itemMap = {}, repMap = {}, tabletMap = {};
+  const followupCounts = { 'New Lead': 0, 'Follow-up': 0 };
+  const meetingWithMap = {}, meetingTeamMap = {};
+
+  leads.forEach(l => {
+    // Day
+    if (l.day && l.day !== '—')
+      dayMap[l.day] = (dayMap[l.day] || 0) + 1;
+
+    // Rep + Tablet (same field)
+    if (l.entered_by && l.entered_by !== 'N/A') {
+      repMap[l.entered_by] = (repMap[l.entered_by] || 0) + 1;
+      tabletMap[l.entered_by] = (tabletMap[l.entered_by] || 0) + 1;
+    }
+
+    // Follow-up
+    l.is_follow_up ? followupCounts['Follow-up']++ : followupCounts['New Lead']++;
+
+    // Meeting
+    if (l.meeting_with && l.meeting_with !== '—')
+      meetingWithMap[l.meeting_with] = (meetingWithMap[l.meeting_with] || 0) + 1;
+    if (l.meeting_team && l.meeting_team !== '—')
+      meetingTeamMap[l.meeting_team] = (meetingTeamMap[l.meeting_team] || 0) + 1;
+
+    // Categories & items from raw area_of_interest
+    const parts = (l.area_of_interest || '').split(',').map(s => s.trim()).filter(Boolean);
+    parts.forEach(p => {
+      if (p.includes(' - ')) {
+        const [cat, item] = p.split(' - ', 2).map(s => s.trim());
+        if (ALLOWED_CATS_CLIENT.has(cat.toLowerCase())) {
+          catMap[cat] = (catMap[cat] || 0) + 1;
+          if (item) itemMap[item] = (itemMap[item] || 0) + 1;
+        }
+      } else if (ALLOWED_CATS_CLIENT.has(p.toLowerCase())) {
+        catMap[p] = (catMap[p] || 0) + 1;
+      }
+    });
   });
-  renderTable(filtered);
+
+  // Sort day labels by number
+  const sortedDays = Object.fromEntries(
+    Object.entries(dayMap).sort((a, b) => {
+      const na = parseInt(a[0].replace(/\D/g,'')) || 0;
+      const nb = parseInt(b[0].replace(/\D/g,'')) || 0;
+      return na - nb;
+    })
+  );
+
+  return {
+    leads_per_day:        sortedDays,
+    category_counts:      Object.fromEntries(Object.entries(catMap).sort((a,b) => b[1]-a[1])),
+    item_counts:          Object.fromEntries(Object.entries(itemMap).sort((a,b) => b[1]-a[1])),
+    leads_per_rep:        repMap,
+    tablet_data:          tabletMap,
+    followup_counts:      followupCounts,
+    meeting_with_counts:  meetingWithMap,
+    meeting_team_counts:  meetingTeamMap,
+  };
 }
 
+function updateCharts(agg) {
+  if (agg.leads_per_day       && Object.keys(agg.leads_per_day).length)       rDay(agg.leads_per_day);
+  if (agg.category_counts     && Object.keys(agg.category_counts).length)     rCategory(agg.category_counts);
+  if (agg.item_counts         && Object.keys(agg.item_counts).length)         rItem(agg.item_counts);
+  if (agg.leads_per_rep       && Object.keys(agg.leads_per_rep).length)       rRep(agg.leads_per_rep);
+  if (agg.tablet_data)                                                          rTiles(agg.tablet_data);
+  if (agg.followup_counts)                                                      rType(agg.followup_counts);
+  if (agg.meeting_with_counts && Object.keys(agg.meeting_with_counts).length) rBars('barPerson', agg.meeting_with_counts, ['#4F46E5','#1D4ED8','#0891B2','#059669','#7C3AED','#D97706']);
+  if (agg.meeting_team_counts && Object.keys(agg.meeting_team_counts).length) rBars('barTeam',   agg.meeting_team_counts, ['#0891B2','#059669','#D97706','#7C3AED','#4F46E5','#E11D48']);
+}
+
+// ── Apply all filters ──
+function applyFilters() {
+  filterState.rep         = document.getElementById('filterRep').value;
+  filterState.day         = document.getElementById('filterDay')?.value         || '';
+  filterState.category    = document.getElementById('filterCategory')?.value    || '';
+  filterState.category2   = document.getElementById('filterCategory2')?.value   || '';
+  filterState.meetingWith = document.getElementById('filterMeetingWith')?.value || '';
+  filterState.meetingTeam = document.getElementById('filterMeetingTeam')?.value || '';
+  filterState.intent      = document.getElementById('filterIntent')?.value      || '';
+  filterState.intent2     = document.getElementById('filterIntent2')?.value     || '';
+
+  const filtered = allLeads.filter(l => {
+    if (filterState.rep         && l.entered_by.split('@')[0] !== filterState.rep)    return false;
+    if (filterState.day         && l.day !== filterState.day)                          return false;
+    if (filterState.meetingWith && l.meeting_with !== filterState.meetingWith)         return false;
+    if (filterState.meetingTeam && l.meeting_team !== filterState.meetingTeam)         return false;
+
+    // Category filter logic
+    if (filterState.category || filterState.category2) {
+      const cats = l.categories || [];
+      const matchPrimary   = filterState.category  && cats.includes(filterState.category)  && cats.every(c => c === filterState.category);
+      const matchSecondary = filterState.category2 && cats.includes(filterState.category2);
+      if (filterState.category && filterState.category2) {
+        if (!matchPrimary && !matchSecondary) return false;  // union
+      } else if (filterState.category) {
+        if (!matchPrimary) return false;   // strict only
+      } else if (filterState.category2) {
+        if (!matchSecondary) return false; // inclusive only
+      }
+    }
+
+    // Intent filter logic
+    if (filterState.intent || filterState.intent2) {
+      const types = l.intent_types || [];
+      const matchPrimary   = filterState.intent  && types.includes(filterState.intent)  && types.every(t => t === filterState.intent);
+      const matchSecondary = filterState.intent2 && types.includes(filterState.intent2);
+      if (filterState.intent && filterState.intent2) {
+        if (!matchPrimary && !matchSecondary) return false;  // union
+      } else if (filterState.intent) {
+        if (!matchPrimary) return false;   // strict only
+      } else if (filterState.intent2) {
+        if (!matchSecondary) return false; // inclusive only
+      }
+    }
+
+    // Items filter — OR logic: lead must contain at least one selected item
+    if (filterState.items.length > 0) {
+      const parts = (l.area_of_interest || '').split(',').map(s => {
+        const p = s.trim();
+        return p.includes(' - ') ? p.split(' - ')[1].trim() : '';
+      }).filter(Boolean);
+      if (!filterState.items.some(item => parts.includes(item))) return false;
+    }
+
+    // Important / Follow-up logic
+    if (filterState.important && filterState.followup) {
+      if (!l.is_important || !l.is_follow_up) return false;
+    } else if (filterState.important) {
+      if (!l.is_important || l.is_follow_up) return false;
+    } else if (filterState.followup) {
+      if (!l.is_follow_up || l.is_important) return false;
+    }
+
+    return true;
+  });
+
+  renderTable(filtered);
+  updateActivePills();
+
+  // Show Items button when category or intent is selected
+  const itemBtn = document.getElementById('itemFilterBtn');
+  if (itemBtn) {
+    const showItems = !!(filterState.category || filterState.intent);
+    itemBtn.style.display = showItems ? 'inline-flex' : 'none';
+    if (!showItems) {
+      filterState.items = [];
+      document.getElementById('itemDropdown')?.classList.remove('open');
+    }
+    updateItemBtnLabel();
+  }
+
+  // Update carousel charts from filtered data
+  const anyFilter = Object.entries(filterState).some(([k, v]) => Array.isArray(v) ? v.length > 0 : Boolean(v));
+  if (anyFilter) {
+    updateCharts(aggregateFromLeads(filtered));
+  } else if (lastData) {
+    updateCharts(lastData);
+  }
+}
+
+// ── Interest column: first chip + "+" button → modal ──
+function interestChipHTML(text, large) {
+  const cat = text.split(' - ')[0].trim().toLowerCase();
+  const cls = ['oil','beverage','food','others'].includes(cat) ? 'chip-' + cat : 'chip-remark';
+  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const klass = large ? `int-modal-chip ${cls}` : `interest-chip ${cls}`;
+  return `<span class="${klass}">${safe}</span>`;
+}
+
+function renderInterestCell(raw) {
+  if (!raw || !raw.trim()) return '<span style="color:var(--ink-4);font-size:10px;">—</span>';
+  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+  const safe = encodeURIComponent(raw);
+  return `<div class="interest-cell">
+    ${interestChipHTML(parts[0], false)}
+    ${parts.length > 1
+      ? `<button class="interest-plus-btn" onclick="openIntModal('${safe}',event)">+${parts.length - 1}</button>`
+      : ''}
+  </div>`;
+}
+
+function openIntModal(safeRaw, e) {
+  e.stopPropagation();
+  // Find the row's lead data from the clicked element
+  const td   = e.target.closest('td');
+  const tr   = td ? td.closest('tr') : null;
+  const name = tr ? (tr.querySelector('.td-name')?.textContent?.trim() || 'Lead') : 'Lead';
+  const org  = tr ? (tr.querySelector('.td-org')?.textContent?.trim()  || '')     : '';
+
+  const raw   = decodeURIComponent(safeRaw);
+  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+
+  document.getElementById('intModalAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('intModalName').textContent   = name;
+  document.getElementById('intModalOrg').textContent    = org;
+  document.getElementById('intModalChips').innerHTML    = parts.map(t => interestChipHTML(t, true)).join('');
+  document.getElementById('intModal').classList.add('open');
+}
+
+function closeIntModal(e) {
+  if (e.target === document.getElementById('intModal'))
+    document.getElementById('intModal').classList.remove('open');
+}
+
+// ── Item filter chip builder ──
+// Map category → items, built from live lead data
+let itemsByCat = {};
+
+function buildItemMap(leads) {
+  itemsByCat = {};
+  leads.forEach(l => {
+    const parts = (l.area_of_interest || '').split(',').map(s => s.trim()).filter(Boolean);
+    parts.forEach(p => {
+      if (p.includes(' - ')) {
+        const [cat, item] = p.split(' - ', 2).map(s => s.trim());
+        if (!itemsByCat[cat]) itemsByCat[cat] = new Set();
+        if (item) itemsByCat[cat].add(item);
+      }
+    });
+  });
+}
+
+// ── Excel-style item dropdown ──
+function toggleItemDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('itemDropdown');
+  if (!dd) return;
+  const opening = !dd.classList.contains('open');
+  dd.classList.toggle('open', opening);
+  if (opening) {
+    document.getElementById('iddSearch').value = '';
+    renderIddItems();
+  }
+}
+
+function renderIddItems() {
+  const search = (document.getElementById('iddSearch')?.value || '').toLowerCase();
+  const cat    = document.getElementById('filterCategory')?.value || '';
+  const intent = document.getElementById('filterIntent')?.value   || '';
+
+  // Determine which category key to look up
+  // intent→category mapping for lookup
+  const INTENT_TO_CAT = { Sales: null, Purchase: 'Purchase', Services: 'Service', Others: 'Others' };
+  let lookupKey = cat || (intent && INTENT_TO_CAT[intent] !== undefined ? INTENT_TO_CAT[intent] : null);
+
+  let allItems = [];
+  if (lookupKey && itemsByCat[lookupKey]) {
+    allItems = [...itemsByCat[lookupKey]].sort();
+  } else if (lookupKey === null && intent === 'Sales') {
+    // Sales = Oil + Food + Beverage items
+    ['Oil','Food','Beverage'].forEach(k => {
+      if (itemsByCat[k]) itemsByCat[k].forEach(i => allItems.push(i));
+    });
+    allItems = [...new Set(allItems)].sort();
+  } else {
+    Object.values(itemsByCat).forEach(s => s.forEach(i => allItems.push(i)));
+    allItems = [...new Set(allItems)].sort();
+  }
+
+  const filtered = search ? allItems.filter(i => i.toLowerCase().includes(search)) : allItems;
+  document.getElementById('iddList').innerHTML = filtered.map(item => {
+    const checked = filterState.items.includes(item);
+    const safe = item.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return `<div class="idd-item ${checked ? 'checked' : ''}" onclick="toggleItem('${safe}')">
+      <input type="checkbox" ${checked ? 'checked' : ''} onclick="event.stopPropagation();toggleItem('${safe}')">
+      ${item}
+    </div>`;
+  }).join('') || '<div style="padding:8px 12px;font-size:11px;color:var(--ink-4)">No items found</div>';
+}
+
+function selectAllItems() {
+  let allItems = [];
+  Object.values(itemsByCat).forEach(s => s.forEach(i => allItems.push(i)));
+  filterState.items = [...new Set(allItems)];
+  renderIddItems();
+  renderTableHeader();
+  applyFilters();
+}
+
+// Close item dropdown on outside click
+document.addEventListener('click', e => {
+  const dd = document.getElementById('itemDropdown');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+
+function onCategoryChange() {
+  applyFilters();
+  const cat = document.getElementById('filterCategory')?.value || '';
+  const btn = document.getElementById('itemFilterBtn');
+  if (!btn) return;
+  if (cat) {
+    btn.style.display = 'inline-flex';
+    filterState.items = [];
+    updateItemBtnLabel();
+  } else {
+    btn.style.display = 'none';
+    filterState.items = [];
+    document.getElementById('itemDropdown')?.classList.remove('open');
+  }
+}
+
+function updateItemBtnLabel() {
+  const btn   = document.getElementById('itemFilterBtn');
+  const count = document.getElementById('itemBtnCount');
+  if (!btn) return;
+  const n = filterState.items.length;
+  if (count) count.textContent = n ? `(${n})` : '';
+  btn.style.background  = n ? 'var(--purple)' : '';
+  btn.style.color       = n ? '#fff' : '';
+  btn.style.borderColor = n ? 'var(--purple)' : '';
+}
+
+function toggleItemDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('itemDropdown');
+  if (!dd) return;
+  const opening = !dd.classList.contains('open');
+  dd.classList.toggle('open', opening);
+  if (opening) {
+    document.getElementById('iddSearch').value = '';
+    renderIddItems();
+  }
+}
+
+function toggleItem(item) {
+  const idx = filterState.items.indexOf(item);
+  if (idx === -1) filterState.items.push(item);
+  else filterState.items.splice(idx, 1);
+  updateItemBtnLabel();
+  renderIddItems();
+  renderTableHeader();
+  applyFilters();
+}
+
+function clearItemFilter() {
+  filterState.items = [];
+  updateItemBtnLabel();
+  renderIddItems();
+  renderTableHeader();
+  applyFilters();
+}
+
+function updateItemCount() {
+  const el = document.getElementById('itemSelectedCount');
+  if (el) el.textContent = filterState.items.length ? `(${filterState.items.length} selected)` : '';
+}
+
+// ── Intent cell ──
+function renderIntentCell(types) {
+  if (!types || !types.length) return '<span style="color:var(--ink-4);font-size:10px;">—</span>';
+  const MAP = { Sales: 'ic-sales', Purchase: 'ic-purchase', Services: 'ic-services', Others: 'ic-others' };
+  return `<div class="intent-chips">${types.map(t =>
+    `<span class="intent-chip ${MAP[t] || 'ic-others'}">${t}</span>`
+  ).join('')}</div>`;
+}
+
+// ── Render table rows ──
 function renderTable(leads) {
+  renderTableHeader();
   const tb = document.getElementById('tblBody');
   const fc = document.getElementById('filterCount');
   fc.textContent = leads.length + ' of ' + allLeads.length + ' leads';
+
   if (!leads.length) {
-    tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-4);padding:24px">No leads match filters</td></tr>';
+    const colCount = colOrder.filter(k => visibleCols[k]).length;
+    tb.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--ink-4);padding:24px">No leads match filters</td></tr>`;
     return;
   }
-  tb.innerHTML = leads.map((l,i)=>{
+
+  const noActiveFilter = !Object.entries(filterState).some(([,v]) => Array.isArray(v) ? v.length > 0 : Boolean(v));
+  const v = visibleCols;
+
+  tb.innerHTML = leads.map((l, i) => {
+    const isNew = i === 0 && noActiveFilter;
     const flags = [
       l.is_important ? '<span class="badge-important"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>IMP</span>' : '',
-      l.is_follow_up ? '<span class="badge-followup"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>F/U</span>' : ''
+      l.is_follow_up ? '<span class="badge-followup"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>F/U</span>' : '',
+      l.is_stock ? '<span class="badge-important" style="background:var(--teal-lt);color:var(--teal);border-color:#A8EDD8">STK</span>' : ''
     ].join('');
-    const hasImg = l.image_urls && l.image_urls.length > 0;
-    const imgCell = hasImg
-      ? `<button class="img-btn" onclick='openImgModal(${JSON.stringify(l.image_urls)}, ${JSON.stringify(l.name)})'>📷 ${l.image_urls.length}</button>`
+    const imgCell = l.image_urls?.length
+      ? `<button class="img-btn" onclick='openImgModal(${JSON.stringify(l.image_urls)},${JSON.stringify(l.name)})'>📷 ${l.image_urls.length}</button>`
       : '<span style="color:var(--ink-4);font-size:10px;">—</span>';
-    return `<tr>
-      <td><span class="td-name">${l.name}</span> ${i===0&&!filterState.rep&&!filterState.important&&!filterState.followup?'<span class="pill-new">● new</span>':''}</td>
-      <td class="td-org">${l.organization}</td>
-      <td>${imgCell}</td>
-      <td class="td-muted">${l.designation}</td>
-      <td class="td-green">${l.meeting_with||'—'}</td>
-      <td class="td-violet">${l.meeting_team||'—'}</td>
-      <td class="td-indigo">${l.entered_by.split('@')[0]}</td>
-      <td class="td-small">${l.time}</td>
-      <td>${flags}</td>
-    </tr>`;
+
+    const cellMap = {
+      name:          () => `<td><span class="td-name">${l.name}</span>${isNew ? '<span class="pill-new">● new</span>' : ''}</td>`,
+      org:           () => `<td class="td-org">${l.organization}</td>`,
+      card:          () => `<td>${imgCell}</td>`,
+      desig:         () => `<td class="td-muted">${l.designation}</td>`,
+      phone:         () => `<td class="td-muted">${l.phone || '—'}</td>`,
+      email_col:     () => `<td class="td-muted" style="font-size:11px">${l.email || '—'}</td>`,
+      interest:      () => `<td class="interest-td">${renderInterestCell(l.area_of_interest)}</td>`,
+      meeting:       () => `<td class="td-green">${l.meeting_with || '—'}</td>`,
+      team:          () => `<td class="td-violet">${l.meeting_team || '—'}</td>`,
+      rep:           () => `<td class="td-indigo">${l.entered_by.split('@')[0]}</td>`,
+      time:          () => `<td class="td-small">${l.time}</td>`,
+      flags:         () => `<td>${flags}</td>`,
+      intent:        () => `<td class="intent-td">${renderIntentCell(l.intent_types)}</td>`,
+      co_strength:   () => `<td class="td-muted">${l.company_strength || '—'}</td>`,
+      co_turnover:   () => `<td class="td-muted">${l.company_turnover || '—'}</td>`,
+      website:       () => l.website ? `<td><a href="${l.website.startsWith('http') ? l.website : 'https://'+l.website}" target="_blank" style="color:var(--purple);font-size:11px">${l.website.replace(/^https?:\/\//,'').slice(0,22)}</a></td>` : `<td class="td-muted">—</td>`,
+      remarks:       () => `<td class="td-muted" style="max-width:180px;white-space:normal;font-size:11px">${l.remarks || '—'}</td>`,
+      other_interest:() => `<td class="td-muted" style="font-size:11px">${l.other_interest || '—'}</td>`,
+      reg_id:        () => `<td class="td-small">${l.registration_id || '—'}</td>`,
+      is_stock:      () => `<td>${l.is_stock ? '<span style="color:var(--teal);font-weight:700;font-size:11px">✓ Yes</span>' : '<span style="color:var(--ink-4);font-size:11px">No</span>'}</td>`,
+    };
+
+    const cells = colOrder.filter(k => v[k]).map(k => cellMap[k] ? cellMap[k]() : '').join('');
+    return `<tr>${cells}</tr>`;
   }).join('');
 }
 
 function rTable(leads) {
-  if (!leads||!leads.length) {
-    document.getElementById('tblBody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-4);padding:24px">No leads yet</td></tr>';
+  if (!leads || !leads.length) {
+    document.getElementById('tblBody').innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--ink-4);padding:24px">No leads yet</td></tr>';
     return;
   }
   allLeads = leads;
+  buildItemMap(leads);
+  populateDropdowns(leads);
   applyFilters();
 }
 
-// ── Helpers ──
+// ═══════════════════════════════════════════════════
+// ── HELPERS ──
+// ═══════════════════════════════════════════════════
 function topEntry(obj) {
-  const e = Object.entries(obj||{});
-  return e.length ? e.reduce((a,b)=>b[1]>a[1]?b:a) : null;
+  const e = Object.entries(obj || {});
+  return e.length ? e.reduce((a, b) => b[1] > a[1] ? b : a) : null;
 }
 
 function animateTo(el, target) {
-  const start = parseInt(el.textContent)||0;
-  if (start===target) return;
-  const diff = target-start, dur = Math.min(600,Math.abs(diff)*40), t0 = performance.now();
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) return;
+  const diff = target - start, dur = Math.min(600, Math.abs(diff) * 40), t0 = performance.now();
   function step(t) {
-    const p = Math.min((t-t0)/dur,1), ease = 1-Math.pow(1-p,3);
-    el.textContent = Math.round(start+diff*ease);
-    if (p<1) requestAnimationFrame(step); else el.textContent=target;
+    const p = Math.min((t - t0) / dur, 1), ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + diff * ease);
+    if (p < 1) requestAnimationFrame(step); else el.textContent = target;
   }
   requestAnimationFrame(step);
 }
@@ -1153,36 +2290,38 @@ function animateTo(el, target) {
 let prevTotal = 0;
 
 function update(d) {
-  if (!d||!d.total_leads) return;
+  if (!d) return;
+  document.getElementById('lastUpdated').textContent = 'Updated ' + (d.last_updated || '');
+  if (!d.total_leads) { document.getElementById('kTotal').textContent = '0'; return; }
   const tel = document.getElementById('kTotal');
-  if (d.total_leads!==prevTotal) {
+  if (d.total_leads !== prevTotal) {
     animateTo(tel, d.total_leads);
-    tel.style.transform='scale(1.06)';
-    setTimeout(()=>tel.style.transform='scale(1)',350);
+    tel.style.transform = 'scale(1.06)';
+    setTimeout(() => tel.style.transform = 'scale(1)', 350);
     prevTotal = d.total_leads;
   }
   const rep = topEntry(d.leads_per_rep);
-  if (rep) { animateTo(document.getElementById('kRepN'),rep[1]); document.getElementById('kRepLbl').textContent=rep[0].split('@')[0]; }
+  if (rep) { animateTo(document.getElementById('kRepN'), rep[1]); document.getElementById('kRepLbl').textContent = rep[0].split('@')[0]; }
   const person = topEntry(d.meeting_with_counts);
-  if (person) { animateTo(document.getElementById('kPersonN'),person[1]); document.getElementById('kPersonLbl').textContent=person[0]; }
+  if (person) { animateTo(document.getElementById('kPersonN'), person[1]); document.getElementById('kPersonLbl').textContent = person[0]; }
   const team = topEntry(d.meeting_team_counts);
-  if (team) { animateTo(document.getElementById('kTeamN'),team[1]); const t=team[0]; document.getElementById('kTeamLbl').textContent=t.length>20?t.slice(0,18)+'…':t; }
-  animateTo(document.getElementById('kTabs'), Object.keys(d.tablet_data||{}).length);
-  document.getElementById('lastUpdated').textContent = 'Updated '+(d.last_updated||'');
-
+  if (team) { animateTo(document.getElementById('kTeamN'), team[1]); const t = team[0]; document.getElementById('kTeamLbl').textContent = t.length > 20 ? t.slice(0,18)+'…' : t; }
+  animateTo(document.getElementById('kTabs'), Object.keys(d.tablet_data || {}).length);
   if (d.leads_per_day       && Object.keys(d.leads_per_day).length)       rDay(d.leads_per_day);
   if (d.category_counts     && Object.keys(d.category_counts).length)     rCategory(d.category_counts);
   if (d.item_counts         && Object.keys(d.item_counts).length)         rItem(d.item_counts);
   if (d.leads_per_rep       && Object.keys(d.leads_per_rep).length)       rRep(d.leads_per_rep);
   if (d.followup_counts     && Object.keys(d.followup_counts).length)     rType(d.followup_counts);
   if (d.tablet_data)                                                        rTiles(d.tablet_data);
-  if (d.meeting_with_counts && Object.keys(d.meeting_with_counts).length) rBars('barPerson',d.meeting_with_counts,['#4F46E5','#1D4ED8','#0891B2','#059669','#7C3AED','#D97706']);
-  if (d.meeting_team_counts && Object.keys(d.meeting_team_counts).length) rBars('barTeam',d.meeting_team_counts,['#0891B2','#059669','#D97706','#7C3AED','#4F46E5','#E11D48']);
+  if (d.meeting_with_counts && Object.keys(d.meeting_with_counts).length) rBars('barPerson', d.meeting_with_counts, ['#4F46E5','#1D4ED8','#0891B2','#059669','#7C3AED','#D97706']);
+  if (d.meeting_team_counts && Object.keys(d.meeting_team_counts).length) rBars('barTeam',   d.meeting_team_counts, ['#0891B2','#059669','#D97706','#7C3AED','#4F46E5','#E11D48']);
   if (d.recent_leads)                                                       rTable(d.recent_leads);
   if (d.all_reps)                                                           populateRepFilter(d.all_reps);
 }
 
+// ═══════════════════════════════════════════════════
 // ── CAROUSEL ──
+// ═══════════════════════════════════════════════════
 const SLIDES = [
   { id:'slide-0', label:'📊 Overview' },
   { id:'slide-1', label:'🗂️ Interests' },
@@ -1193,23 +2332,22 @@ let autoTimer = null;
 
 function buildDots() {
   const c = document.getElementById('dots');
-  c.innerHTML = SLIDES.map((_,i)=>`<div class="dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
+  c.innerHTML = SLIDES.map((_,i) => `<div class="dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
 }
 
 function goSlide(n) {
   document.getElementById(SLIDES[current].id).classList.remove('active');
   document.querySelectorAll('.dot')[current].classList.remove('active');
-  current = (n+SLIDES.length)%SLIDES.length;
+  current = (n + SLIDES.length) % SLIDES.length;
   document.getElementById(SLIDES[current].id).classList.add('active');
   document.querySelectorAll('.dot')[current].classList.add('active');
   document.getElementById('slideLabel').textContent = SLIDES[current].label;
-  // Resize charts on newly visible slide
-  setTimeout(()=>{ Object.values(charts).forEach(c=>c.resize()); },50);
+  setTimeout(() => { Object.values(charts).forEach(c => c.resize()); }, 50);
   resetAuto();
 }
 
-function nextSlide() { goSlide(current+1); }
-function prevSlide() { goSlide(current-1); }
+function nextSlide() { goSlide(current + 1); }
+function prevSlide() { goSlide(current - 1); }
 
 let paused = false;
 
@@ -1218,17 +2356,11 @@ function togglePause() {
   const btn = document.getElementById('pauseBtn');
   if (paused) {
     clearInterval(autoTimer);
-    btn.textContent = '▶';
-    btn.title = 'Resume auto-advance';
-    btn.style.background = 'var(--purple)';
-    btn.style.color = '#fff';
-    btn.style.borderColor = 'var(--purple)';
+    btn.textContent = '▶'; btn.title = 'Resume auto-advance';
+    btn.style.background = 'var(--purple)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--purple)';
   } else {
-    btn.textContent = '⏸';
-    btn.title = 'Pause auto-advance';
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.style.borderColor = '';
+    btn.textContent = '⏸'; btn.title = 'Pause auto-advance';
+    btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
     resetAuto();
   }
 }
@@ -1236,89 +2368,64 @@ function togglePause() {
 function resetAuto() {
   if (paused) return;
   clearInterval(autoTimer);
-  autoTimer = setInterval(()=>goSlide(current+1), 10000);
+  autoTimer = setInterval(() => goSlide(current + 1), 10000);
 }
 
 buildDots();
 document.getElementById('slideLabel').textContent = SLIDES[0].label;
 resetAuto();
 
-// ── Export Excel ──
+// ═══════════════════════════════════════════════════
+// ── EXPORT EXCEL ──
+// ═══════════════════════════════════════════════════
 let lastData = null;
 
 async function exportExcel() {
   if (!lastData) { alert('No data loaded yet, please wait a moment.'); return; }
-
   const btn = document.querySelector('.export-btn');
   const origText = btn.innerHTML;
-  btn.innerHTML = '⏳ Exporting…';
-  btn.disabled = true;
-
+  btn.innerHTML = '⏳ Exporting…'; btn.disabled = true;
   try {
-    // Fetch ALL leads from backend
     const res = await fetch('/export');
-    const allLeads = await res.json();
+    const allLeadsExport = await res.json();
     const d = lastData;
     const wb = XLSX.utils.book_new();
-
-    // Sheet 1: ALL Leads (full backend data)
     const headers = ['Name','Email','Phone','Organization','Designation','Company Strength',
                      'Meeting With','Meeting Team','Area of Interest','Remarks',
                      'Follow-up','Important','Captured By','Date','Image URLs'];
     const leadsRows = [headers];
-    allLeads.forEach(l => {
-      leadsRows.push([
-        l.name, l.email, l.phone, l.organization, l.designation, l.company_strength,
+    allLeadsExport.forEach(l => {
+      leadsRows.push([l.name, l.email, l.phone, l.organization, l.designation, l.company_strength,
         l.meeting_with, l.meeting_team, l.area_of_interest, l.remarks,
-        l.is_follow_up, l.is_important, l.captured_by, l.date, l.image_urls||''
-      ]);
+        l.is_follow_up, l.is_important, l.captured_by, l.date, l.image_urls||'']);
     });
     const ws1 = XLSX.utils.aoa_to_sheet(leadsRows);
-    // Column widths
-    ws1['!cols'] = [20,28,14,28,20,14,14,22,40,30,10,10,20,20].map(w=>({wch:w}));
+    ws1['!cols'] = [20,28,14,28,20,14,14,22,40,30,10,10,20,20].map(w => ({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws1, 'All Leads');
-
-    // Sheet 2: Leads per Day
-    const dayRows = [['Day','Leads']];
-    Object.entries(d.leads_per_day||{}).forEach(([k,v]) => dayRows.push([k,v]));
+    const dayRows = [['Day','Leads']]; Object.entries(d.leads_per_day||{}).forEach(([k,v]) => dayRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dayRows), 'Leads Per Day');
-
-    // Sheet 3: Leads per Rep
-    const repRows = [['Rep Email','Leads']];
-    Object.entries(d.leads_per_rep||{}).forEach(([k,v]) => repRows.push([k,v]));
+    const repRows = [['Rep Email','Leads']]; Object.entries(d.leads_per_rep||{}).forEach(([k,v]) => repRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(repRows), 'Leads Per Rep');
-
-    // Sheet 4: Interest Category
-    const catRows = [['Category','Count']];
-    Object.entries(d.category_counts||{}).forEach(([k,v]) => catRows.push([k,v]));
+    const catRows = [['Category','Count']]; Object.entries(d.category_counts||{}).forEach(([k,v]) => catRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(catRows), 'Interest Category');
-
-    // Sheet 5: Interest Items
-    const itemRows = [['Item','Count']];
-    Object.entries(d.item_counts||{}).forEach(([k,v]) => itemRows.push([k,v]));
+    const itemRows = [['Item','Count']]; Object.entries(d.item_counts||{}).forEach(([k,v]) => itemRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(itemRows), 'Interest Items');
-
-    // Sheet 6: Meeting With Person
-    const personRows = [['Person','Count']];
-    Object.entries(d.meeting_with_counts||{}).forEach(([k,v]) => personRows.push([k,v]));
+    const personRows = [['Person','Count']]; Object.entries(d.meeting_with_counts||{}).forEach(([k,v]) => personRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(personRows), 'Meeting Person');
-
-    // Sheet 7: Meeting With Team
-    const teamRows = [['Team','Count']];
-    Object.entries(d.meeting_team_counts||{}).forEach(([k,v]) => teamRows.push([k,v]));
+    const teamRows = [['Team','Count']]; Object.entries(d.meeting_team_counts||{}).forEach(([k,v]) => teamRows.push([k,v]));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(teamRows), 'Meeting Team');
-
     const date = new Date().toISOString().slice(0,10);
     XLSX.writeFile(wb, `Aahar2026_Leads_${date}.xlsx`);
   } catch(e) {
     alert('Export failed: ' + e.message);
   } finally {
-    btn.innerHTML = origText;
-    btn.disabled = false;
+    btn.innerHTML = origText; btn.disabled = false;
   }
 }
 
-// ── Image Modal ──
+// ═══════════════════════════════════════════════════
+// ── IMAGE MODAL ──
+// ═══════════════════════════════════════════════════
 function openImgModal(urls, name) {
   document.getElementById('imgModalTitle').textContent = name + ' — Business Card';
   document.getElementById('imgModalContent').innerHTML = urls.map((url, i) => `
@@ -1335,15 +2442,33 @@ function closeImgModal(e) {
     document.getElementById('imgModal').classList.remove('open');
 }
 
-// ── Poll ──
+// ═══════════════════════════════════════════════════
+// ── POLL ──
+// ═══════════════════════════════════════════════════
 function poll() {
   fetch('/data')
-    .then(r=>r.json())
-    .then(d=>{ lastData = d; update(d); })
-    .catch(()=>{ document.getElementById('lastUpdated').textContent='⚠️ Server unreachable…'; });
+    .then(r => r.json())
+    .then(d => { lastData = d; update(d); })
+    .catch(() => { document.getElementById('lastUpdated').textContent = '⚠️ Server unreachable…'; });
 }
 poll();
 setInterval(poll, 3000);
 </script>
+<!-- Interest Detail Modal -->
+<div class="int-modal-overlay" id="intModal" onclick="closeIntModal(event)">
+  <div class="int-modal-box">
+    <button class="int-modal-close" onclick="document.getElementById('intModal').classList.remove('open')">✕</button>
+    <div class="int-modal-lead">
+      <div class="int-modal-avatar" id="intModalAvatar">?</div>
+      <div class="int-modal-lead-info">
+        <div class="int-modal-name" id="intModalName"></div>
+        <div class="int-modal-org"  id="intModalOrg"></div>
+      </div>
+    </div>
+    <div class="int-modal-section-label">🗂 Area of Interest &amp; Remarks</div>
+    <div class="int-modal-chips" id="intModalChips"></div>
+  </div>
+</div>
+
 </body>
 </html>
