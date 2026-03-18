@@ -190,6 +190,10 @@ def process_data(docs):
             'other_interest':   str(row.get('other_interest', '')) if pd.notna(row.get('other_interest', '')) else '',
             'registration_id':  str(row.get('registration_id', '')) if pd.notna(row.get('registration_id', '')) else '',
             'is_stock':         bool_flag(row.get('is_stock_contact', False)),
+            'simple_cam_url':   str(row.get('simple_camera_image_url', '')) if pd.notna(row.get('simple_camera_image_url', '')) else '',
+            'interested_in':    str(row.get('interested_in', '')) if pd.notna(row.get('interested_in', '')) else '',
+            'meeting_with_others': str(row.get('meeting_with_others', '')) if pd.notna(row.get('meeting_with_others', '')) else '',
+            'email_delivery_status': str(row.get('email_delivery_status', '')) if pd.notna(row.get('email_delivery_status', '')) else '',
         })
 
     # ← FIX: build all_reps from recent_leads after the loop

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Aahar 2026  Live Dashboard</title>
+<title>Aahar 2026 — Live Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -1560,7 +1560,11 @@ const COL_DEFS = [
   { key: 'remarks',          label: 'Remarks',          always: false },
   { key: 'other_interest',   label: 'Other Interest',   always: false },
   { key: 'reg_id',           label: 'Reg. ID',          always: false },
-  { key: 'is_stock',         label: 'Stock Contact',    always: false },
+  { key: 'is_stock',         label: 'Stock Contact',      always: false },
+  { key: 'simple_cam',      label: 'Camera Image',        always: false },
+  { key: 'interested_in',   label: 'Interested In',       always: false },
+  { key: 'mtg_others',      label: 'Meeting Others',      always: false },
+  { key: 'email_status',    label: 'Email Status',        always: false },
 ];
 
 // Default: show first 9 columns only, rest hidden
@@ -2249,6 +2253,10 @@ function renderTable(leads) {
       other_interest:() => `<td class="td-muted" style="font-size:11px">${l.other_interest || '—'}</td>`,
       reg_id:        () => `<td class="td-small">${l.registration_id || '—'}</td>`,
       is_stock:      () => `<td>${l.is_stock ? '<span style="color:var(--teal);font-weight:700;font-size:11px">✓ Yes</span>' : '<span style="color:var(--ink-4);font-size:11px">No</span>'}</td>`,
+      simple_cam:    () => l.simple_cam_url ? `<td><a href="${l.simple_cam_url}" target="_blank"><img src="${l.simple_cam_url}" style="height:36px;border-radius:4px;border:1px solid var(--border);cursor:pointer" onerror="this.style.display='none'"/></a></td>` : `<td class="td-muted">—</td>`,
+      interested_in: () => `<td class="td-muted" style="font-size:11px">${l.interested_in || '—'}</td>`,
+      mtg_others:    () => `<td class="td-muted" style="font-size:11px">${l.meeting_with_others || '—'}</td>`,
+      email_status:  () => `<td class="td-small">${l.email_delivery_status || '—'}</td>`,
     };
 
     const cells = colOrder.filter(k => v[k]).map(k => cellMap[k] ? cellMap[k]() : '').join('');
